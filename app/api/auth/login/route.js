@@ -1,8 +1,8 @@
 const { NextResponse } = require('next/server');
 const bcrypt = require('bcryptjs');
-const { getDb } = require('../../../../lib/db');
-const { createToken, setAuthCookie } = require('../../../../lib/auth');
-const { writeAuditLog } = require('../../../../lib/audit');
+const { getDb } = require('lib/db');
+const { createToken, setAuthCookie } = require('lib/auth');
+const { writeAuditLog } = require('lib/audit');
 
 async function POST(request) {
   try {
