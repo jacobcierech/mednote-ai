@@ -1,7 +1,7 @@
 const { NextResponse } = require('next/server');
 const bcrypt = require('bcryptjs');
-const { getUserFromRequest } = require('../../../lib/auth');
-const { getDb } = require('../../../lib/db');
+const { getUserFromRequest } = require('../../../../lib/auth');
+const { getDb } = require('../../../../lib/db');
 const { writeAuditLog } = require('../../../../lib/audit');
 
 async function PUT(request) {
