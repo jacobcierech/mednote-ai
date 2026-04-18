@@ -1,9 +1,9 @@
 const { NextResponse } = require('next/server');
 const { v4: uuidv4 } = require('uuid');
-const { getUserFromRequest } = require('../../../../lib/auth');
-const { getDb } = require('../../../../lib/db');
-const { generateClinicalNote } = require('../../../../lib/openai');
-const { writeAuditLog } = require('../../../../lib/audit');
+const { getUserFromRequest } = require('../../../lib/auth');
+const { getDb } = require('../../../lib/db');
+const { generateClinicalNote } = require('../../../lib/openai');
+const { writeAuditLog } = require('../../../lib/audit');
 
 // GET /api/notes/[id]
 async function GET(request, { params }) {
