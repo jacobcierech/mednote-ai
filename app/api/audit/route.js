@@ -1,6 +1,6 @@
 const { NextResponse } = require('next/server');
-const { getUserFromRequest } = require('../../../lib/auth');
-const { getDb } = require('../../../lib/db');
+const { getUserFromRequest } = require('../../../../lib/auth');
+const { getDb } = require('../../../../lib/db');
 
 async function GET(request) {
   const user = getUserFromRequest(request);
