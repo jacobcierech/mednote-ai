@@ -37,32 +37,35 @@ async function POST(request) {
 
   try {
     const body = await request.json();
+    const nestedFields = body.fields || {};
     const {
       patientLabel = 'Unnamed Patient',
       noteType = 'SOAP',
       specialty = 'Primary Care',
       shorthandInput = '',
-      diagnosis = '',
-      visitNumber = '',
-      precautions = '',
-      interventions = '',
-      deficits = '',
-      assistLevel = '',
-      response: patientResponse = '',
-      plan = '',
+      generatedNote: providedGeneratedNote = '',
+      diagnosis = nestedFields.diagnosis || '',
+      visitNumber = nestedFields.visitNumber || '',
+      precautions = nestedFields.precautions || '',
+      interventions = nestedFields.interventions || '',
+      deficits = nestedFields.deficits || '',
+      assistLevel = nestedFields.assistLevel || '',
+      response: patientResponse = nestedFields.response || '',
+      plan = nestedFields.plan || '',
     } = body;
 
-    if (!shorthandInput.trim() && !diagnosis.trim()) {
+    if (!providedGeneratedNote.trim() && !shorthandInput.trim() && !diagnosis.trim()) {
       return NextResponse.json({ error: 'Please enter visit notes or at least a diagnosis.' }, { status: 400 });
     }
 
-    // Generate note via OpenAI
-    const generatedNote = await generateClinicalNote({
-      noteType,
-      specialty,
-      fields: { diagnosis, visitNumber, precautions, interventions, deficits, assistLevel, response: patientResponse, plan },
-      shorthandInput,
-    });
+    const generatedNote = providedGeneratedNote.trim()
+      ? providedGeneratedNote
+      : await generateClinicalNote({
+          noteType,
+          specialty,
+          fields: { diagnosis, visitNumber, precautions, interventions, deficits, assistLevel, response: patientResponse, plan },
+          shorthandInput,
+        });
 
     const noteId = uuidv4();
     const versionId = uuidv4();

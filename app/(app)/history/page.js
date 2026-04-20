@@ -151,10 +151,10 @@ export default function HistoryPage() {
                 <p style={{ fontSize: 12, color: 'var(--gray)' }}>{openNote.specialty} · {new Date(openNote.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={() => router.push(`/generate?edit=${openNote.id}`)} style={{
+                <button onClick={() => router.push('/soap')} style={{
                   padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border)',
                   background: 'white', color: 'var(--ink)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                }}>Edit & regenerate</button>
+                }}>Open SOAP workspace</button>
                 <button onClick={() => handleCopy(displayedNote)} style={{
                   padding: '7px 14px', borderRadius: 8, border: 'none',
                   background: copied ? 'var(--teal)' : 'var(--ink)', color: 'white', fontSize: 12, fontWeight: 500, cursor: 'pointer',

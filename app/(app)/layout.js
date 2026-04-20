@@ -15,9 +15,10 @@ const NAV = [
       <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>
     </svg>
   )},
-  { href: '/generate', label: 'Generate note', icon: (
+  { href: '/soap', label: 'SOAP workspace', icon: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <rect x="3" y="3.5" width="10" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M5.5 6h5M5.5 8h5M5.5 10h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   )},
   { href: '/history', label: 'Note history', icon: (
@@ -90,7 +91,7 @@ export default function AppLayout({ children }) {
 
           {/* New note button */}
           <div style={{ padding: '0.75rem 0.6rem 0' }}>
-            <Link href="/generate" style={{
+            <Link href="/soap" style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '10px 12px', borderRadius: 8,
               background: 'var(--teal)', color: 'white',
@@ -100,7 +101,7 @@ export default function AppLayout({ children }) {
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 2v12M2 8h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
               </svg>
-              New note
+              New SOAP note
             </Link>
           </div>
 

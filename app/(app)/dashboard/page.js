@@ -63,10 +63,10 @@ export default function DashboardPage() {
           ) : notes.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
               <p style={{ color: 'var(--gray)', fontSize: 13, marginBottom: '1rem' }}>No notes yet. Generate your first!</p>
-              <Link href="/generate" style={{
+              <Link href="/soap" style={{
                 display: 'inline-block', padding: '9px 20px', borderRadius: 8,
                 background: 'var(--teal)', color: 'white', fontSize: 13, fontWeight: 500, textDecoration: 'none',
-              }}>Generate a note →</Link>
+              }}>Start a SOAP note →</Link>
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
