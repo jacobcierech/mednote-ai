@@ -1,6 +1,6 @@
 const { NextResponse } = require('next/server');
 const bcrypt = require('bcryptjs');
-const { getDb } = require('lib/db');
+const { one } = require('lib/db');
 const { createToken, setAuthCookie } = require('lib/auth');
 const { writeAuditLog } = require('lib/audit');
 
@@ -11,8 +11,7 @@ async function POST(request) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
     }
 
-    const db = getDb();
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
+    const user = await one('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
     if (!user) {
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
@@ -28,7 +27,7 @@ async function POST(request) {
       user: { id: user.id, email: user.email, name: user.name, specialty: user.specialty }
     });
     setAuthCookie(response, token);
-    writeAuditLog({ userId: user.id, action: 'LOGIN', metadata: { email } });
+    await writeAuditLog({ userId: user.id, action: 'LOGIN', metadata: { email } });
 
     return response;
   } catch (err) {

@@ -1,7 +1,7 @@
 const { NextResponse } = require('next/server');
 const { v4: uuidv4 } = require('uuid');
 const { getUserFromRequest } = require('lib/auth');
-const { getDb } = require('lib/db');
+const { execute, many, one, transaction } = require('lib/db');
 const { generateClinicalNote } = require('lib/openai');
 const { writeAuditLog } = require('lib/audit');
 
@@ -10,11 +10,16 @@ async function GET(request, { params }) {
   const user = getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const db = getDb();
-  const note = db.prepare('SELECT * FROM notes WHERE id = ? AND user_id = ?').get(params.id, user.userId);
+  const note = await one(
+    'SELECT * FROM notes WHERE id = $1 AND user_id = $2',
+    [params.id, user.userId]
+  );
   if (!note) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
 
-  const versions = db.prepare('SELECT * FROM note_versions WHERE note_id = ? ORDER BY version_number DESC').all(params.id);
+  const versions = await many(
+    'SELECT * FROM note_versions WHERE note_id = $1 ORDER BY version_number DESC',
+    [params.id]
+  );
   return NextResponse.json({ note, versions });
 }
 
@@ -37,8 +42,10 @@ async function PUT(request, { params }) {
       plan = '',
     } = body;
 
-    const db = getDb();
-    const note = db.prepare('SELECT * FROM notes WHERE id = ? AND user_id = ?').get(params.id, user.userId);
+    const note = await one(
+      'SELECT * FROM notes WHERE id = $1 AND user_id = $2',
+      [params.id, user.userId]
+    );
     if (!note) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
 
     const generatedNote = await generateClinicalNote({
@@ -50,26 +57,56 @@ async function PUT(request, { params }) {
 
     const newVersion = note.current_version + 1;
 
-    // Save new version
-    db.prepare(`
-      INSERT INTO note_versions (id, note_id, version_number, generated_note, shorthand_input,
-        diagnosis, visit_number, precautions, interventions, deficits, assist_level, response, plan)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(uuidv4(), params.id, newVersion, generatedNote, shorthandInput,
-      diagnosis, visitNumber, precautions, interventions, deficits, assistLevel, patientResponse, plan);
+    await transaction(async (db) => {
+      await db.execute(
+        `INSERT INTO note_versions (
+          id, note_id, version_number, generated_note, shorthand_input,
+          diagnosis, visit_number, precautions, interventions, deficits, assist_level, response, plan
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          uuidv4(),
+          params.id,
+          newVersion,
+          generatedNote,
+          shorthandInput,
+          diagnosis,
+          visitNumber,
+          precautions,
+          interventions,
+          deficits,
+          assistLevel,
+          patientResponse,
+          plan,
+        ]
+      );
 
-    // Update note
-    db.prepare(`
-      UPDATE notes SET generated_note=?, shorthand_input=?, diagnosis=?, visit_number=?,
-        precautions=?, interventions=?, deficits=?, assist_level=?, response=?, plan=?,
-        current_version=?, updated_at=datetime('now')
-      WHERE id=?
-    `).run(generatedNote, shorthandInput, diagnosis, visitNumber, precautions, interventions,
-      deficits, assistLevel, patientResponse, plan, newVersion, params.id);
+      await db.execute(
+        `UPDATE notes
+         SET generated_note = $1, shorthand_input = $2, diagnosis = $3, visit_number = $4,
+             precautions = $5, interventions = $6, deficits = $7, assist_level = $8, response = $9, plan = $10,
+             current_version = $11, updated_at = NOW()
+         WHERE id = $12`,
+        [
+          generatedNote,
+          shorthandInput,
+          diagnosis,
+          visitNumber,
+          precautions,
+          interventions,
+          deficits,
+          assistLevel,
+          patientResponse,
+          plan,
+          newVersion,
+          params.id,
+        ]
+      );
+    });
 
-    writeAuditLog({ userId: user.userId, action: 'REGENERATE_NOTE', noteId: params.id, metadata: { version: newVersion } });
+    await writeAuditLog({ userId: user.userId, action: 'REGENERATE_NOTE', noteId: params.id, metadata: { version: newVersion } });
 
-    const updated = db.prepare('SELECT * FROM notes WHERE id = ?').get(params.id);
+    const updated = await one('SELECT * FROM notes WHERE id = $1', [params.id]);
     return NextResponse.json({ note: updated, generatedNote });
 
   } catch (err) {
@@ -83,12 +120,14 @@ async function DELETE(request, { params }) {
   const user = getUserFromRequest(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const db = getDb();
-  const note = db.prepare('SELECT * FROM notes WHERE id = ? AND user_id = ?').get(params.id, user.userId);
+  const note = await one(
+    'SELECT * FROM notes WHERE id = $1 AND user_id = $2',
+    [params.id, user.userId]
+  );
   if (!note) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
 
-  db.prepare('DELETE FROM notes WHERE id = ?').run(params.id);
-  writeAuditLog({ userId: user.userId, action: 'DELETE_NOTE', noteId: params.id, metadata: { noteType: note.note_type } });
+  await execute('DELETE FROM notes WHERE id = $1', [params.id]);
+  await writeAuditLog({ userId: user.userId, action: 'DELETE_NOTE', noteId: params.id, metadata: { noteType: note.note_type } });
 
   return NextResponse.json({ success: true });
 }

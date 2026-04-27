@@ -1,7 +1,7 @@
 const { NextResponse } = require('next/server');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const { getDb } = require('lib/db')
+const { execute, one } = require('lib/db')
 const { createToken, setAuthCookie } = require('lib/auth')
 const { writeAuditLog } = require('lib/audit')
 
@@ -16,8 +16,7 @@ async function POST(request) {
       return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
     }
 
-    const db = getDb();
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
+    const existing = await one('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing) {
       return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 409 });
     }
@@ -25,15 +24,17 @@ async function POST(request) {
     const passwordHash = await bcrypt.hash(password, 12);
     const userId = uuidv4();
 
-    db.prepare(`
-      INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)
-    `).run(userId, email.toLowerCase(), passwordHash, name);
+    await execute(
+      `INSERT INTO users (id, email, password_hash, name)
+       VALUES ($1, $2, $3, $4)`,
+      [userId, email.toLowerCase(), passwordHash, name]
+    );
 
     const token = createToken({ userId, email: email.toLowerCase(), name });
     const response = NextResponse.json({ success: true, user: { id: userId, email, name } });
     setAuthCookie(response, token);
 
-    writeAuditLog({ userId, action: 'REGISTER', metadata: { email } });
+    await writeAuditLog({ userId, action: 'REGISTER', metadata: { email } });
 
     return response;
   } catch (err) {

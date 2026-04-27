@@ -2,16 +2,29 @@
 // Usage: node scripts/setup-db.js
 
 require('dotenv').config({ path: '.env.local' })
-const { getDb } = require('../lib/db')
+const { ensureDb, getDbMode, inspectTables } = require('../lib/db')
 
-try {
-  const db = getDb()
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all()
-  console.log('\n✅ Database ready!')
-  console.log('   Tables:', tables.map(t => t.name).join(', '))
-  console.log('   Path:', require('path').resolve(process.env.DATABASE_PATH || './mednote.db'))
-  console.log()
-} catch (err) {
-  console.error('❌ Database error:', err.message)
-  process.exit(1)
+async function main() {
+  try {
+    await ensureDb()
+    const tables = await inspectTables()
+    const mode = getDbMode()
+
+    console.log('\n✅ Database ready!')
+    console.log('   Mode:', mode)
+    console.log('   Tables:', tables.map(t => t.name).join(', '))
+
+    if (mode === 'postgres') {
+      console.log('   Connection: PostgreSQL via DATABASE_URL / PG* env vars')
+    } else {
+      console.log('   Path:', require('path').resolve(process.env.DATABASE_PATH || './mednote.db'))
+    }
+
+    console.log()
+  } catch (err) {
+    console.error('❌ Database error:', err.message)
+    process.exit(1)
+  }
 }
+
+main()
