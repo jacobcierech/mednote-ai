@@ -96,31 +96,57 @@ function buildPrompt({ patientName, visitFocus, diagnosis, precautions, visitNum
   return contextLines.join('\n');
 }
 
-const SYSTEM_PROMPT = `You are an experienced outpatient occupational therapist writing documentation for a real OT workflow.
+function buildEvaluationPrompt(evaluationData = {}) {
+  const lines = [
+    evaluationData.setting && `Evaluation setting: ${evaluationData.setting}`,
+    evaluationData.patientGoals && `Patient goals: ${evaluationData.patientGoals}`,
+    evaluationData.pain && `Evaluation pain findings: ${evaluationData.pain}`,
+    evaluationData.rom && `ROM findings: ${evaluationData.rom}`,
+    evaluationData.strength && `Strength findings: ${evaluationData.strength}`,
+    evaluationData.standardizedAssessments &&
+      `Standardized assessments: ${evaluationData.standardizedAssessments}`,
+    evaluationData.functionalDeficits &&
+      `Functional deficits: ${evaluationData.functionalDeficits}`,
+    evaluationData.barriers && `Barriers: ${evaluationData.barriers}`,
+    evaluationData.strengths && `Strengths: ${evaluationData.strengths}`,
+    evaluationData.clinicalObservations &&
+      `Clinical observations: ${evaluationData.clinicalObservations}`,
+  ].filter(Boolean);
 
-Write a concise, clinically specific SOAP note using only the provided details.
+  return lines.join('\n');
+}
+
+const SYSTEM_PROMPT = `You are an experienced outpatient occupational therapist writing a real visit note.
+
+Write a concise but clinically rich SOAP note using only the provided details.
 
 Requirements:
 - Return valid JSON matching the schema exactly.
 - The objective field must be an array of short clinical statements.
-- Use OT language that links impairments to occupational performance.
-- Be specific about skilled interventions, cues, task demands, body regions, and functional carryover when provided.
-- Favor concrete phrases like "required intermittent verbal cues for pacing during buttoning task" over vague summaries.
-- Preserve useful clinical specifics such as tendon glides, edema management, scapular stabilization, in-hand manipulation, jar opening, dressing fasteners, keyboard use, grooming reach, meal prep, grasp endurance, and fine motor coordination when supported by the input.
+- Use OT-specific language that connects observed impairments to occupational performance.
+- Document skilled OT interventions, patient response, cueing, movement quality, symptom behavior, task demands, and functional carryover when provided.
+- Preserve concrete clinical details such as tendon glides, edema management, scar management, fine motor coordination, in-hand manipulation, bilateral hand use, proximal compensation, pacing, ergonomic modification, dressing fasteners, jar opening, keyboarding, grooming reach, and meal prep when supported by the input.
+- If evaluation findings are provided, carry them forward into the note so the assessment sounds grounded in the broader plan of care.
+- Show clinical reasoning. Explain why the current presentation still requires skilled OT.
+
+Language expectations:
+- favor specific wording like "required intermittent verbal cues to reduce compensatory shoulder elevation during reaching task" over generic wording like "patient needed cues"
+- use documentation-style language that sounds efficient and defensible
+- emphasize occupational performance, task quality, symptom provocation, endurance, dexterity, grasp/pinch demands, coordination, motor control, and functional participation when appropriate
 
 Avoid:
 - generic filler
 - motivational language
 - "tolerated session well" unless explicitly supported
 - "making progress" unless clearly supported
-- restating the same sentence across sections
+- repeating the same phrase across multiple sections
 - inventing measurements, goals, frequency, duration, or progress not present in the input
 
 Section guidance:
-- Subjective: summarize patient-reported symptoms and functional complaints only.
-- Objective: list the skilled OT interventions, education, cues, and observed task performance.
-- Assessment: interpret how current deficits affect occupational performance and why skilled OT remains indicated.
-- Plan: state the next clinical focus with specific OT priorities.`;
+- Subjective: summarize patient-reported symptoms, functional complaints, and symptom behavior only.
+- Objective: list skilled OT interventions, education, cueing, and observable task performance in short statements.
+- Assessment: interpret how current deficits affect occupational performance and why skilled OT remains indicated at this stage.
+- Plan: state the next OT focus with specific treatment priorities, progression targets, or task areas.`;
 
 export async function POST(request) {
   try {
@@ -140,15 +166,17 @@ export async function POST(request) {
       visitNumber = '',
       caseContext = '',
       visitData = {},
+      evaluationData = {},
     } = body || {};
 
+    const evaluationPrompt = buildEvaluationPrompt(evaluationData);
     const prompt = buildPrompt({
       patientName,
       visitFocus,
       diagnosis,
       precautions,
       visitNumber,
-      caseContext,
+      caseContext: [caseContext, evaluationPrompt].filter(Boolean).join('\n'),
       visitData: {
         subjectiveReport: visitData.subjectiveReport || '',
         interventionsCompleted: visitData.interventionsCompleted || '',

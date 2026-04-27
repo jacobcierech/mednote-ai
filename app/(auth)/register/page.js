@@ -37,47 +37,52 @@ export default function RegisterPage() {
   })
 
   return (
-    <div style={{ width: '100%', maxWidth: 420 }} className="animate-fade-in">
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 28, color: 'var(--ink)' }}>
+    <div style={{ width: '100%', maxWidth: 470 }} className="animate-fade-in">
+      <div style={{ textAlign: 'center', marginBottom: '2.2rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 999, background: 'rgba(255,255,255,0.74)', border: '1px solid rgba(17,32,52,0.08)', marginBottom: 16 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #22b59d 0%, #4f8cff 100%)' }} />
+          <span style={{ fontSize: 12, color: 'var(--gray)', fontWeight: 600 }}>Built for modern clinical workflows</span>
+        </div>
+        <h1 style={{ fontFamily: 'Plus Jakarta Sans, DM Sans, sans-serif', fontSize: 34, fontWeight: 800, color: 'var(--ink)' }}>
           MedNote<span style={{ color: 'var(--teal)' }}>AI</span>
         </h1>
-        <p style={{ color: 'var(--gray)', fontSize: 14, marginTop: 6 }}>Create your free account</p>
+        <p style={{ color: 'var(--gray)', fontSize: 15, marginTop: 8, lineHeight: 1.7 }}>Create your account to start documenting evals, assessments, and SOAP notes in one workflow.</p>
       </div>
 
-      <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 16, padding: '2rem' }}>
+      <div style={{ background: 'rgba(255,255,255,0.88)', border: '1px solid rgba(17,32,52,0.08)', borderRadius: 28, padding: '2.25rem', boxShadow: 'var(--shadow-soft)', backdropFilter: 'blur(18px)' }}>
         {error && (
           <div style={{ background: '#FCEBEB', border: '1px solid #F7C1C1', borderRadius: 8, padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: '1.25rem' }}>
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
           <div>
-            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 5 }}>Full name</label>
+            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Full name</label>
             <input type="text" required placeholder="Dr. Alex Reynolds" {...F('name')} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 5 }}>Email</label>
+            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Email</label>
             <input type="email" required placeholder="you@clinic.com" {...F('email')} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 5 }}>Specialty</label>
+            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Specialty</label>
             <select {...F('specialty')}>
               {SPECIALTIES.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 5 }}>Password</label>
+            <label style={{ fontSize: 12, color: 'var(--gray)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Password</label>
             <input type="password" required placeholder="At least 8 characters" {...F('password')} />
           </div>
           <button
             type="submit" disabled={loading}
             style={{
-              marginTop: 4, padding: '11px', borderRadius: 8, border: 'none',
-              background: loading ? 'var(--gray-light)' : 'var(--ink)',
-              color: 'white', fontSize: 14, fontWeight: 500,
+              marginTop: 8, padding: '15px', borderRadius: 18, border: 'none',
+              background: loading ? 'var(--gray-light)' : 'linear-gradient(135deg, #18314f 0%, #157a6e 100%)',
+              color: 'white', fontSize: 15, fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
               fontFamily: 'DM Sans, sans-serif',
+              boxShadow: loading ? 'none' : '0 16px 28px rgba(21,122,110,0.24)',
             }}
           >
             {loading ? 'Creating account…' : 'Create account'}

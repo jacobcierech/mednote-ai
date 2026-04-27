@@ -59,65 +59,6 @@ const SETTING_OPTIONS = [
   ['acute', 'Acute Care'],
 ];
 
-const SUBJECTIVE_PRESETS = [
-  'Reports morning stiffness limiting dressing fasteners and meal prep.',
-  'Reports increased pain after household tasks requiring sustained grasp.',
-  'States typing tolerance remains limited due to wrist soreness and fatigue.',
-  'Reports difficulty opening containers, cutting food, and carrying cookware.',
-  'Reports shoulder pain with overhead reaching during grooming and dressing.',
-];
-
-const RESPONSE_PRESETS = [
-  'Required intermittent verbal cues for pacing and movement quality.',
-  'Required tactile cues to reduce compensatory shoulder elevation during task performance.',
-  'Demonstrated mild fatigue with repetitive grasp and pinch activity.',
-  'Completed session without increased edema or adverse response.',
-  'Continues to demonstrate limited sustained grasp affecting functional hand use.',
-];
-
-const HOME_PROGRAM_PRESETS = [
-  'Reviewed tendon glides, wrist AROM, and edema control strategies for home program.',
-  'Reinforced joint protection, activity pacing, and task modification for kitchen tasks.',
-  'Reviewed scapular positioning, ROM home exercises, and symptom-monitoring strategies.',
-  'Provided education on body mechanics, rest breaks, and carryover into ADL performance.',
-];
-
-const PLAN_PRESETS = [
-  'Progress ROM and graded strengthening during next session.',
-  'Continue task-specific ADL retraining focused on dressing and grooming performance.',
-  'Advance fine motor coordination and sustained grasp demands during functional hand tasks.',
-  'Reassess tolerance for work-related computer use and ergonomic carryover.',
-  'Continue skilled OT to address pain, weakness, and occupational performance deficits.',
-];
-
-const INTERVENTION_PRESETS = {
-  HandTherapy: [
-    'Performed tendon glides, wrist AROM, and fine motor in-hand manipulation training.',
-    'Completed edema management education, scar mobilization, and pinch strengthening tasks.',
-    'Facilitated grasp-release and dexterity tasks using buttons, coins, and resistance blocks.',
-  ],
-  UpperExtremity: [
-    'Completed shoulder AROM, scapular stabilization, and graded reaching activity.',
-    'Facilitated overhead task simulation for grooming, dressing, and cabinet access.',
-    'Provided proximal strengthening and movement re-education for shoulder mechanics.',
-  ],
-  NeuroRehab: [
-    'Facilitated bilateral coordination, sequencing, and task-specific motor retraining.',
-    'Completed neuromuscular re-education targeting motor control during self-care tasks.',
-    'Implemented functional reach and grasp activity emphasizing pacing and movement quality.',
-  ],
-  ADLTraining: [
-    'Completed dressing retraining using graded fastener management and task sequencing.',
-    'Facilitated meal-prep simulation with pacing, setup, and safety strategies.',
-    'Provided task-specific ADL retraining focused on efficiency and compensatory technique.',
-  ],
-  General: [
-    'Completed therapeutic exercise and activity to address ROM, strength, and task performance.',
-    'Provided education in pacing, symptom management, and task modification.',
-    'Facilitated occupation-based activity targeting functional upper extremity use.',
-  ],
-};
-
 const SAMPLE_FORM = {
   patientName: 'Jamie Carter',
   visitFocus: 'Hand Therapy',
@@ -147,11 +88,27 @@ const SAMPLE_EVAL = {
     'Right wrist stiffness, reduced grip, and pain limiting dressing, meal prep, and keyboard use.',
   occupationalProfile:
     'Works at a computer, prepares meals at home, and values independent self-care and household management.',
+  patientGoals:
+    'Return to independent meal prep, typing for full workday, and fastener management without pain escalation.',
   plof:
     'Independent with ADLs, meal prep, typing for full workday, and home management prior to injury.',
   clof:
     'Needs extra time for dressing fasteners, avoids jars and heavier kitchen tasks, and can only tolerate brief periods of typing.',
   pain: 'Reports soreness after repetitive hand use and prolonged gripping.',
+  rom:
+    'Reduced wrist flexion/extension and forearm supination limiting sustained functional hand positioning.',
+  strength:
+    'Decreased grip and pinch strength contributing to impaired container management and meal prep tasks.',
+  standardizedAssessments:
+    'QuickDASH 43.2. Grip strength and pinch testing below age-matched expectations.',
+  functionalDeficits:
+    'Difficulty with meal prep, jar opening, fastener management, and sustained keyboard use.',
+  barriers:
+    'Pain with repetitive use, stiffness after inactivity, and reduced sustained grasp endurance.',
+  strengthsSummary:
+    'Good insight, intact cognition, motivated return to work tasks, and consistent home program follow-through.',
+  clinicalObservations:
+    'Observed guarded wrist use, reduced in-hand manipulation efficiency, and compensatory proximal movement during fine motor tasks.',
   deficit: 'grip_pinch_weakness',
   limitation: 'opening_containers',
   setting: 'hand_therapy',
@@ -178,9 +135,17 @@ const INITIAL_EVAL = {
   postopStatus: '',
   chiefComplaint: '',
   occupationalProfile: '',
+  patientGoals: '',
   plof: '',
   clof: '',
   pain: '',
+  rom: '',
+  strength: '',
+  standardizedAssessments: '',
+  functionalDeficits: '',
+  barriers: '',
+  strengthsSummary: '',
+  clinicalObservations: '',
   deficit: 'grip_pinch_weakness',
   limitation: 'opening_containers',
   setting: 'outpatient_orthopedics',
@@ -197,42 +162,15 @@ function Field({ label, children }) {
 
 function SectionCard({ title, description, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+    <section className="rounded-[28px] border border-white/60 bg-white/85 p-7 shadow-[0_18px_44px_rgba(27,53,87,0.08)] backdrop-blur">
+      <div className="mb-5">
+        <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
         {description ? (
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
         ) : null}
       </div>
       {children}
     </section>
-  );
-}
-
-function PresetRow({ label, options, onSelect }) {
-  return (
-    <div className="mt-2 flex items-center gap-2">
-      <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-        {label}
-      </span>
-      <select
-        defaultValue=""
-        onChange={(event) => {
-          const value = event.target.value;
-          if (!value) return;
-          onSelect(value);
-          event.target.value = '';
-        }}
-        className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 outline-none focus:border-teal-500"
-      >
-        <option value="">Choose preset...</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </div>
   );
 }
 
@@ -244,12 +182,36 @@ function formatSoapNote(soapNote) {
     'Objective:',
     ...soapNote.objective.map((item) => `- ${item}`),
     '',
-    'Assessment:',
+    'SOAP Assessment:',
     soapNote.assessment,
     '',
     'Plan:',
     soapNote.plan,
   ].join('\n');
+}
+
+function formatEvalOutput(evalResult) {
+  if (!evalResult) return '';
+
+  return [
+    'Evaluation Summary:',
+    evalResult.evaluationSummary,
+    '',
+    'Evaluation Assessment:',
+    evalResult.assessment,
+    '',
+    'Clinical Connections:',
+    ...evalResult.clinicalConnections.map((item) => `- ${item}`),
+    '',
+    'Treatment Priorities:',
+    ...evalResult.treatmentPriorities.map((item) => `- ${item}`),
+  ].join('\n');
+}
+
+function formatFullClientNote({ evalResult, soapNote }) {
+  return [formatEvalOutput(evalResult), formatSoapNote(soapNote)]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function buildCasePayload(form, evalData, recommendations) {
@@ -265,9 +227,17 @@ function buildCasePayload(form, evalData, recommendations) {
     eval: {
       chiefComplaint: evalData.chiefComplaint,
       occupationalProfile: evalData.occupationalProfile,
+      patientGoals: evalData.patientGoals,
       plof: evalData.plof,
       clof: evalData.clof,
       pain: evalData.pain,
+      rom: evalData.rom,
+      strength: evalData.strength,
+      standardizedAssessments: evalData.standardizedAssessments,
+      functionalDeficits: evalData.functionalDeficits,
+      barriers: evalData.barriers,
+      strengthsSummary: evalData.strengthsSummary,
+      clinicalObservations: evalData.clinicalObservations,
       deficits: [evalData.deficit],
       functionalLimitations: [evalData.limitation],
       assessmentResults: recommendations.assessments,
@@ -287,11 +257,15 @@ function buildCasePayload(form, evalData, recommendations) {
 export default function SoapPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [evalData, setEvalData] = useState(INITIAL_EVAL);
+  const [evalResult, setEvalResult] = useState(null);
   const [soapNote, setSoapNote] = useState(null);
   const [error, setError] = useState('');
+  const [evalError, setEvalError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isEvalLoading, setIsEvalLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedEval, setCopiedEval] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [caseSaved, setCaseSaved] = useState(false);
 
@@ -331,9 +305,22 @@ export default function SoapPage() {
         chiefComplaint: parsed.eval?.chiefComplaint || current.chiefComplaint,
         occupationalProfile:
           parsed.eval?.occupationalProfile || current.occupationalProfile,
+        patientGoals: parsed.eval?.patientGoals || current.patientGoals,
         plof: parsed.eval?.plof || current.plof,
         clof: parsed.eval?.clof || current.clof,
         pain: parsed.eval?.pain || current.pain,
+        rom: parsed.eval?.rom || current.rom,
+        strength: parsed.eval?.strength || current.strength,
+        standardizedAssessments:
+          parsed.eval?.standardizedAssessments ||
+          current.standardizedAssessments,
+        functionalDeficits:
+          parsed.eval?.functionalDeficits || current.functionalDeficits,
+        barriers: parsed.eval?.barriers || current.barriers,
+        strengthsSummary:
+          parsed.eval?.strengthsSummary || current.strengthsSummary,
+        clinicalObservations:
+          parsed.eval?.clinicalObservations || current.clinicalObservations,
         deficit: parsed.eval?.deficits?.[0] || current.deficit,
         limitation:
           parsed.eval?.functionalLimitations?.[0] || current.limitation,
@@ -349,14 +336,6 @@ export default function SoapPage() {
     setCaseSaved(false);
   };
 
-  const appendToField = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: prev[key] ? `${prev[key]} ${value}` : value,
-    }));
-    setCaseSaved(false);
-  };
-
   const updateEvalField = (key, value) => {
     setEvalData((prev) => ({ ...prev, [key]: value }));
     setCaseSaved(false);
@@ -365,16 +344,15 @@ export default function SoapPage() {
   const handleFillSample = () => {
     setForm(SAMPLE_FORM);
     setEvalData(SAMPLE_EVAL);
+    setEvalResult(null);
     setSoapNote(null);
     setError('');
+    setEvalError('');
     setCopied(false);
+    setCopiedEval(false);
     setSaveMessage('');
     setCaseSaved(false);
   };
-
-  const interventionPresetOptions =
-    INTERVENTION_PRESETS[form.visitFocus.replace(/\s+/g, '')] ||
-    INTERVENTION_PRESETS.General;
 
   const handleSaveCase = () => {
     const nextCase = buildCasePayload(form, evalData, recommendations);
@@ -391,6 +369,7 @@ export default function SoapPage() {
           evalData.chiefComplaint,
           evalData.occupationalProfile,
           evalData.clof,
+          evalData.clinicalObservations,
         ]
           .filter(Boolean)
           .join(' '),
@@ -428,9 +407,31 @@ export default function SoapPage() {
             evalData.chiefComplaint,
             evalData.occupationalProfile,
             evalData.clof,
+            evalData.patientGoals,
+            evalData.rom,
+            evalData.strength,
+            evalData.standardizedAssessments,
+            evalData.functionalDeficits,
+            evalData.barriers,
+            evalData.strengthsSummary,
+            evalData.clinicalObservations,
           ]
             .filter(Boolean)
             .join('\n'),
+          evaluationData: {
+            setting: evalData.setting,
+            patientGoals: evalData.patientGoals,
+            pain: evalData.pain,
+            rom: evalData.rom,
+            strength: evalData.strength,
+            standardizedAssessments: evalData.standardizedAssessments,
+            functionalDeficits:
+              evalData.functionalDeficits ||
+              [evalData.clof, evalData.limitation].filter(Boolean).join('. '),
+            barriers: evalData.barriers,
+            strengths: evalData.strengthsSummary,
+            clinicalObservations: evalData.clinicalObservations,
+          },
           visitData: {
             subjectiveReport: form.subjectiveReport,
             painToday: form.painToday || evalData.pain,
@@ -473,15 +474,76 @@ export default function SoapPage() {
     }
   };
 
+  const handleGenerateEval = async () => {
+    setIsEvalLoading(true);
+    setEvalError('');
+    setEvalResult(null);
+    setCopiedEval(false);
+
+    try {
+      const response = await fetch('/api/ai/eval-assessment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientName: form.patientName,
+          diagnosis: form.diagnosis,
+          setting: evalData.setting,
+          patientGoals: evalData.patientGoals,
+          pain: evalData.pain,
+          rom: evalData.rom,
+          strength: evalData.strength,
+          standardizedAssessments: evalData.standardizedAssessments,
+          functionalDeficits:
+            evalData.functionalDeficits ||
+            [evalData.clof, evalData.limitation].filter(Boolean).join('. '),
+          barriers: evalData.barriers,
+          strengths: evalData.strengthsSummary,
+          clinicalObservations: evalData.clinicalObservations,
+          occupationalProfile: evalData.occupationalProfile,
+          plof: evalData.plof,
+          clof: evalData.clof,
+          precautions: form.precautions,
+          postopStatus: evalData.postopStatus,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to generate evaluation output.');
+      }
+
+      const nextEval = data?.evalResult;
+      if (
+        !nextEval ||
+        typeof nextEval.evaluationSummary !== 'string' ||
+        typeof nextEval.assessment !== 'string' ||
+        !Array.isArray(nextEval.clinicalConnections) ||
+        !Array.isArray(nextEval.treatmentPriorities)
+      ) {
+        throw new Error('The AI response was not in the expected eval format.');
+      }
+
+      setEvalResult(nextEval);
+    } catch (nextError) {
+      setEvalError(nextError.message || 'Something went wrong.');
+    } finally {
+      setIsEvalLoading(false);
+    }
+  };
+
   const handleCopy = async () => {
     if (!soapNote) return;
 
     try {
-      await navigator.clipboard.writeText(formatSoapNote(soapNote));
+      await navigator.clipboard.writeText(
+        formatFullClientNote({ evalResult, soapNote })
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      setError('Unable to copy SOAP note.');
+      setError('Unable to copy client note.');
     }
   };
 
@@ -507,6 +569,14 @@ export default function SoapPage() {
             form.caseContext,
             evalData.chiefComplaint,
             evalData.occupationalProfile,
+            evalData.patientGoals,
+            evalData.rom,
+            evalData.strength,
+            evalData.standardizedAssessments,
+            evalData.functionalDeficits,
+            evalData.barriers,
+            evalData.strengthsSummary,
+            evalData.clinicalObservations,
           ]
             .filter(Boolean)
             .join('\n\n'),
@@ -520,7 +590,7 @@ export default function SoapPage() {
           assistLevel: form.assistLevel,
           response: form.patientResponse,
           plan: form.planNextVisit || recommendations.longGoal,
-          generatedNote: formatSoapNote(soapNote),
+          generatedNote: formatFullClientNote({ evalResult, soapNote }),
         }),
       });
 
@@ -530,7 +600,7 @@ export default function SoapPage() {
         throw new Error(data?.error || 'Failed to save note to history.');
       }
 
-      setSaveMessage('SOAP note saved to History.');
+      setSaveMessage('Client note saved to History.');
     } catch (saveError) {
       setError(saveError.message || 'Failed to save SOAP note.');
     } finally {
@@ -538,20 +608,32 @@ export default function SoapPage() {
     }
   };
 
+  const handleCopyEval = async () => {
+    if (!evalResult) return;
+
+    try {
+      await navigator.clipboard.writeText(formatEvalOutput(evalResult));
+      setCopiedEval(true);
+      setTimeout(() => setCopiedEval(false), 1800);
+    } catch {
+      setEvalError('Unable to copy evaluation output.');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-[1500px] px-7 py-10">
+        <div className="mb-9 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <div className="mb-2 inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-sm font-medium text-teal-700">
+            <div className="mb-3 inline-flex items-center rounded-full border border-teal-100 bg-white/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm">
               OT Workflow
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              SOAP Note Workspace
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+              New Client Workspace
             </h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-600">
-              One SOAP-first OT workflow with evaluation intake, assessment
-              recommendations, intervention ideas, and structured note generation.
+            <p className="mt-3 max-w-3xl text-[15px] leading-7 text-slate-600">
+              Fast outpatient OT workflow for evaluation intake, clinical
+              reasoning, treatment planning, and visit documentation in one place.
             </p>
           </div>
 
@@ -559,14 +641,14 @@ export default function SoapPage() {
             <button
               type="button"
               onClick={handleFillSample}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-white"
             >
               Fill Sample
             </button>
             <button
               type="button"
               onClick={handleSaveCase}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-[0_16px_30px_rgba(17,32,52,0.16)] transition hover:bg-slate-800"
             >
               Save Eval Context
             </button>
@@ -574,16 +656,16 @@ export default function SoapPage() {
         </div>
 
         {caseSaved ? (
-          <div className="mb-6 rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
+          <div className="mb-6 rounded-3xl border border-teal-200 bg-teal-50/90 px-5 py-4 text-sm text-teal-700 shadow-sm">
             Evaluation context saved to active case.
           </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
+        <div className="grid gap-7 xl:grid-cols-[1.32fr_0.92fr]">
           <div className="space-y-6">
             <SectionCard
               title="Evaluation Intake"
-              description="Capture the initial OT picture that should inform plan recommendations and future SOAP notes."
+              description="Enter the high-yield eval findings once so the app can generate stronger OT-specific assessment language and support later visit notes."
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Patient Name">
@@ -591,7 +673,7 @@ export default function SoapPage() {
                     value={form.patientName}
                     onChange={(e) => updateField('patientName', e.target.value)}
                     className={inputClass}
-                    placeholder="Patient label"
+                    placeholder="Client name"
                   />
                 </Field>
 
@@ -651,6 +733,17 @@ export default function SoapPage() {
               </div>
 
               <div className="mt-4 grid gap-4">
+                <Field label="Patient Goals">
+                  <textarea
+                    value={evalData.patientGoals}
+                    onChange={(e) =>
+                      updateEvalField('patientGoals', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[72px]`}
+                    placeholder="Return to typing full workday, independent dressing fasteners, meal prep without pain, safe shower transfers"
+                  />
+                </Field>
+
                 <Field label="Chief Complaint">
                   <textarea
                     value={evalData.chiefComplaint}
@@ -658,7 +751,7 @@ export default function SoapPage() {
                       updateEvalField('chiefComplaint', e.target.value)
                     }
                     className={`${inputClass} min-h-[88px]`}
-                    placeholder="Primary symptoms and occupational concerns"
+                    placeholder="Pain/stiffness/weakness plus the main occupational complaint: difficulty opening containers, grooming, dressing, keyboarding, meal prep"
                   />
                 </Field>
 
@@ -669,7 +762,7 @@ export default function SoapPage() {
                       updateEvalField('occupationalProfile', e.target.value)
                     }
                     className={`${inputClass} min-h-[88px]`}
-                    placeholder="Roles, routines, meaningful activities, work, home demands"
+                    placeholder="Work role, home demands, meaningful routines, hand dominance, caregiver role, school tasks, hobbies"
                   />
                 </Field>
 
@@ -679,7 +772,7 @@ export default function SoapPage() {
                       value={evalData.plof}
                       onChange={(e) => updateEvalField('plof', e.target.value)}
                       className={`${inputClass} min-h-[88px]`}
-                      placeholder="What was independent before injury or decline?"
+                      placeholder="Independent with all ADLs/IADLs, full-time typing, cooking, lifting laundry basket, driving"
                     />
                   </Field>
 
@@ -688,7 +781,7 @@ export default function SoapPage() {
                       value={evalData.clof}
                       onChange={(e) => updateEvalField('clof', e.target.value)}
                       className={`${inputClass} min-h-[88px]`}
-                      placeholder="Current functional limitations"
+                      placeholder="Needs extra time for buttons, avoids jars, limited sustained grasp for meal prep, reduced keyboard tolerance"
                     />
                   </Field>
                 </div>
@@ -698,7 +791,84 @@ export default function SoapPage() {
                     value={evalData.pain}
                     onChange={(e) => updateEvalField('pain', e.target.value)}
                     className={`${inputClass} min-h-[72px]`}
-                    placeholder="Pain pattern, symptom irritability, edema, stiffness, etc."
+                    placeholder="Pain location/intensity, symptom irritability, morning stiffness, edema, numbness, symptom provocation with task use"
+                  />
+                </Field>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="ROM Findings">
+                    <textarea
+                      value={evalData.rom}
+                      onChange={(e) => updateEvalField('rom', e.target.value)}
+                      className={`${inputClass} min-h-[88px]`}
+                      placeholder="AROM/PROM loss, end-range pain, compensatory movement, limited supination, overhead reach restrictions"
+                    />
+                  </Field>
+
+                  <Field label="Strength Findings">
+                    <textarea
+                      value={evalData.strength}
+                      onChange={(e) =>
+                        updateEvalField('strength', e.target.value)
+                      }
+                      className={`${inputClass} min-h-[88px]`}
+                      placeholder="MMT, grip/pinch weakness, decreased endurance, poor distal control, reduced proximal stability"
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Standardized Assessments">
+                  <textarea
+                    value={evalData.standardizedAssessments}
+                    onChange={(e) =>
+                      updateEvalField('standardizedAssessments', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[72px]`}
+                    placeholder="QuickDASH 43.2, COPM scores, 9-Hole Peg, grip/pinch values, Box and Block, AMPAC"
+                  />
+                </Field>
+
+                <Field label="Functional Deficits">
+                  <textarea
+                    value={evalData.functionalDeficits || ''}
+                    onChange={(e) =>
+                      updateEvalField('functionalDeficits', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[88px]`}
+                    placeholder="Specific ADL/IADL/work deficits: fastening bra, opening medication bottles, typing, meal prep, grooming, handwriting"
+                  />
+                </Field>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Barriers">
+                    <textarea
+                      value={evalData.barriers}
+                      onChange={(e) => updateEvalField('barriers', e.target.value)}
+                      className={`${inputClass} min-h-[88px]`}
+                      placeholder="Pain with repetition, edema, fear avoidance, fatigue, low frustration tolerance, limited support, poor pacing"
+                    />
+                  </Field>
+
+                  <Field label="Strengths">
+                    <textarea
+                      value={evalData.strengthsSummary}
+                      onChange={(e) =>
+                        updateEvalField('strengthsSummary', e.target.value)
+                      }
+                      className={`${inputClass} min-h-[88px]`}
+                      placeholder="Motivated, good insight, strong family support, intact cognition, good HEP carryover, prior independence"
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Clinical Observations">
+                  <textarea
+                    value={evalData.clinicalObservations}
+                    onChange={(e) =>
+                      updateEvalField('clinicalObservations', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[96px]`}
+                    placeholder="Observed guarding, compensatory shoulder hike, reduced in-hand manipulation, dropping items, slowed bilateral coordination, poor pacing"
                   />
                 </Field>
               </div>
@@ -706,7 +876,7 @@ export default function SoapPage() {
 
             <SectionCard
               title="Recommendation Builder"
-              description="Use your deficit and occupational limitation to generate OT-specific assessment and intervention ideas."
+              description="Use one primary deficit and one main occupational limitation to quickly build targeted OT language."
             >
               <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Primary Deficit">
@@ -758,14 +928,14 @@ export default function SoapPage() {
                 <button
                   type="button"
                   onClick={applyRecommendationsToVisit}
-                  className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                  className="rounded-2xl bg-gradient-to-r from-teal-700 to-teal-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_30px_rgba(21,122,110,0.2)] transition hover:opacity-95"
                 >
-                  Apply To SOAP Inputs
+                  Apply To Visit Note
                 </button>
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-white/70 bg-gradient-to-br from-white to-slate-50 p-5 shadow-[0_14px_28px_rgba(27,53,87,0.05)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Assessment Recommendations
                   </h3>
@@ -776,7 +946,7 @@ export default function SoapPage() {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-white/70 bg-gradient-to-br from-white to-teal-50/50 p-5 shadow-[0_14px_28px_rgba(27,53,87,0.05)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Intervention Recommendations
                   </h3>
@@ -787,7 +957,7 @@ export default function SoapPage() {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-white/70 bg-gradient-to-br from-white to-sky-50/50 p-5 shadow-[0_14px_28px_rgba(27,53,87,0.05)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Suggested Goals
                   </h3>
@@ -801,7 +971,7 @@ export default function SoapPage() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-white/70 bg-gradient-to-br from-white to-amber-50/60 p-5 shadow-[0_14px_28px_rgba(27,53,87,0.05)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Clinical Reasoning
                   </h3>
@@ -813,8 +983,93 @@ export default function SoapPage() {
             </SectionCard>
 
             <SectionCard
+              title="AI Evaluation + Assessment"
+              description="Generate efficient OT eval language that connects impairments, occupational deficits, and skilled need."
+            >
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleGenerateEval}
+                  disabled={isEvalLoading}
+                  className="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-700 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_30px_rgba(17,32,52,0.18)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  {isEvalLoading
+                    ? 'Generating Evaluation...'
+                    : 'Generate OT Eval + Assessment'}
+                </button>
+
+                {evalResult ? (
+                  <button
+                    type="button"
+                    onClick={handleCopyEval}
+                    className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                  >
+                    {copiedEval ? 'Copied' : 'Copy Eval Output'}
+                  </button>
+                ) : null}
+              </div>
+
+              {evalError ? (
+                <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {evalError}
+                </div>
+              ) : null}
+
+              {!evalResult && !isEvalLoading && !evalError ? (
+                <p className="mt-4 text-sm text-slate-500">
+                  Generate OT-specific eval and assessment wording from the
+                  intake findings above.
+                </p>
+              ) : null}
+
+              {evalResult ? (
+                <div className="mt-5 space-y-5">
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                      Evaluation Summary
+                    </h3>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                      {evalResult.evaluationSummary}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                      Assessment
+                    </h3>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                      {evalResult.assessment}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                      Clinical Connections
+                    </h3>
+                    <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+                      {evalResult.clinicalConnections.map((item, index) => (
+                        <li key={`${item}-${index}`}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                      Treatment Priorities
+                    </h3>
+                    <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+                      {evalResult.treatmentPriorities.map((item, index) => (
+                        <li key={`${item}-${index}`}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : null}
+            </SectionCard>
+
+            <SectionCard
               title="Visit SOAP Input"
-              description="Document the current visit and generate the final structured SOAP note."
+              description="Use the same client context to write a fast, clinically specific OT visit note."
             >
               <form onSubmit={handleSubmit}>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -848,26 +1103,19 @@ export default function SoapPage() {
                       value={form.caseContext}
                       onChange={(e) => updateField('caseContext', e.target.value)}
                       className={`${inputClass} min-h-[88px]`}
-                      placeholder="Evaluation summary, occupational context, or skilled rationale"
+                      placeholder="Brief clinical setup: diagnosis history, current phase, key OT rationale, meaningful task context"
                     />
                   </Field>
 
                 <Field label="Subjective Report">
-                  <>
-                    <textarea
-                      value={form.subjectiveReport}
-                      onChange={(e) =>
-                        updateField('subjectiveReport', e.target.value)
-                      }
-                      className={`${inputClass} min-h-[88px]`}
-                      placeholder="What the patient reported today"
-                    />
-                    <PresetRow
-                      label="Quick add"
-                      options={SUBJECTIVE_PRESETS}
-                      onSelect={(value) => appendToField('subjectiveReport', value)}
-                    />
-                  </>
+                  <textarea
+                    value={form.subjectiveReport}
+                    onChange={(e) =>
+                      updateField('subjectiveReport', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[88px]`}
+                    placeholder="Patient-reported symptoms and functional complaints today: stiffness with buttons, pain after typing, difficulty opening jars"
+                  />
                 </Field>
 
                   <Field label="Pain Today">
@@ -880,76 +1128,46 @@ export default function SoapPage() {
                   </Field>
 
                 <Field label="Interventions Completed">
-                  <>
-                    <textarea
-                      value={form.interventionsCompleted}
-                      onChange={(e) =>
-                        updateField('interventionsCompleted', e.target.value)
-                      }
-                      className={`${inputClass} min-h-[100px]`}
-                      placeholder="Therapeutic exercise, ADL training, education, task practice"
-                    />
-                    <PresetRow
-                      label="Quick add"
-                      options={interventionPresetOptions}
-                      onSelect={(value) =>
-                        appendToField('interventionsCompleted', value)
-                      }
-                    />
-                  </>
+                  <textarea
+                    value={form.interventionsCompleted}
+                    onChange={(e) =>
+                      updateField('interventionsCompleted', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[100px]`}
+                    placeholder="Skilled OT provided: ROM, tendon glides, task-specific ADL retraining, ergonomic education, edema management, fine motor task practice"
+                  />
                 </Field>
 
                 <Field label="Patient Response / Assessment Cues">
-                  <>
-                    <textarea
-                      value={form.patientResponse}
-                      onChange={(e) =>
-                        updateField('patientResponse', e.target.value)
-                      }
-                      className={`${inputClass} min-h-[88px]`}
-                      placeholder="Tolerance, barriers, cues, carryover, fatigue, quality of movement"
-                    />
-                    <PresetRow
-                      label="Quick add"
-                      options={RESPONSE_PRESETS}
-                      onSelect={(value) => appendToField('patientResponse', value)}
-                    />
-                  </>
+                  <textarea
+                    value={form.patientResponse}
+                    onChange={(e) =>
+                      updateField('patientResponse', e.target.value)
+                    }
+                    className={`${inputClass} min-h-[88px]`}
+                    placeholder="Cueing, compensations, symptom response, fatigue, movement quality, task tolerance, functional carryover"
+                  />
                 </Field>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <Field label="Home Program / Education">
-                      <>
-                        <textarea
-                          value={form.homeProgram}
-                          onChange={(e) => updateField('homeProgram', e.target.value)}
-                          className={`${inputClass} min-h-[88px]`}
-                          placeholder="HEP review, precautions, caregiver education"
-                        />
-                        <PresetRow
-                          label="Quick add"
-                          options={HOME_PROGRAM_PRESETS}
-                          onSelect={(value) => appendToField('homeProgram', value)}
-                        />
-                      </>
+                      <textarea
+                        value={form.homeProgram}
+                        onChange={(e) => updateField('homeProgram', e.target.value)}
+                        className={`${inputClass} min-h-[88px]`}
+                        placeholder="HEP progression, joint protection, pacing, edema control, splint use, caregiver education"
+                      />
                   </Field>
 
                   <Field label="Plan For Next Visit">
-                      <>
-                        <textarea
-                          value={form.planNextVisit}
-                          onChange={(e) =>
-                            updateField('planNextVisit', e.target.value)
-                          }
-                          className={`${inputClass} min-h-[88px]`}
-                          placeholder="What OT should continue or progress next session"
-                        />
-                        <PresetRow
-                          label="Quick add"
-                          options={PLAN_PRESETS}
-                          onSelect={(value) => appendToField('planNextVisit', value)}
-                        />
-                      </>
+                      <textarea
+                        value={form.planNextVisit}
+                        onChange={(e) =>
+                          updateField('planNextVisit', e.target.value)
+                        }
+                        className={`${inputClass} min-h-[88px]`}
+                        placeholder="Progress ROM/strength, advance fine motor demand, increase sustained grasp tolerance, simulate work or home tasks"
+                      />
                   </Field>
                 </div>
                 </div>
@@ -958,14 +1176,14 @@ export default function SoapPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    className="rounded-2xl bg-gradient-to-r from-slate-900 to-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_30px_rgba(17,32,52,0.18)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:bg-slate-400"
                   >
-                    {isLoading ? 'Generating SOAP Note...' : 'Generate SOAP Note'}
+                    {isLoading ? 'Generating Visit Note...' : 'Generate OT SOAP Note'}
                   </button>
 
                   {isLoading ? (
                     <p className="text-sm text-slate-500">
-                      Building structured OT documentation...
+                      Building structured OT documentation with clinical reasoning...
                     </p>
                   ) : null}
                 </div>
@@ -982,10 +1200,11 @@ export default function SoapPage() {
           <div className="space-y-6">
             <SectionCard
               title="Workflow"
-              description="This is now the primary OT note workflow."
+              description="Built for fast OT documentation with stronger clinical specificity."
             >
               <ul className="list-disc space-y-2 pl-5 text-sm text-slate-700">
                 <li>Capture evaluation context and occupational profile.</li>
+                <li>Generate the eval summary and assessment from the intake.</li>
                 <li>Review assessment and intervention recommendations.</li>
                 <li>Apply recommendations into the SOAP visit inputs.</li>
                 <li>Generate, copy, and save the structured SOAP note.</li>
@@ -993,12 +1212,12 @@ export default function SoapPage() {
             </SectionCard>
 
             <SectionCard
-              title="Generated SOAP Note"
-              description="Structured AI output is rendered section-by-section to avoid object rendering errors."
+              title="Generated Client Note"
+              description="Your saved client record can include the evaluation summary, assessment, and SOAP note together."
             >
               {!soapNote && !isLoading && !error ? (
                 <p className="text-slate-500">
-                  Your generated SOAP note will appear here after submission.
+                  Your generated client note will appear here after submission.
                 </p>
               ) : null}
 
@@ -1014,17 +1233,17 @@ export default function SoapPage() {
                     <button
                       type="button"
                       onClick={handleCopy}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                      className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
                     >
-                      {copied ? 'Copied' : 'Copy SOAP Note'}
+                      {copied ? 'Copied' : 'Copy Full Note'}
                     </button>
                     <button
                       type="button"
                       onClick={handleSaveToHistory}
                       disabled={isSaving}
-                      className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-teal-300"
+                      className="rounded-2xl bg-gradient-to-r from-teal-700 to-teal-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_30px_rgba(21,122,110,0.2)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:bg-teal-300"
                     >
-                      {isSaving ? 'Saving...' : 'Save To History'}
+                      {isSaving ? 'Saving...' : 'Save Client To History'}
                     </button>
                   </div>
 
@@ -1082,4 +1301,4 @@ export default function SoapPage() {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100';
+  'w-full rounded-2xl border border-slate-200 bg-white/92 px-5 py-4 text-sm text-slate-900 outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100';
