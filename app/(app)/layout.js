@@ -38,23 +38,28 @@ const NAV = [
 const NOTE_MENU_OPTIONS = [
   {
     href: '/soap?noteMenu=outpatient-eval',
-    label: 'Outpatient eval',
-    description: 'New pediatric eval, goals, and treatment plan',
+    label: 'Pediatric eval mode',
+    description: 'Same workspace with pediatric eval, goals, and treatment planning',
   },
   {
     href: '/soap?noteMenu=progress',
-    label: 'Progress note',
-    description: 'Fast visit summary and skilled intervention note',
+    label: 'Pediatric progress mode',
+    description: 'Same workspace with fast pediatric progress-note support',
+  },
+  {
+    href: '/soap?noteMenu=outpatient-note',
+    label: 'Outpatient OT mode',
+    description: 'Same workspace with general outpatient OT documentation support',
   },
   {
     href: '/soap?noteMenu=insurance',
-    label: 'Insurance note',
-    description: 'Medical necessity, plan of care, and payer support',
+    label: 'Insurance mode',
+    description: 'Same workspace with medical necessity and plan-of-care support',
   },
   {
     href: '/soap?noteMenu=discharge',
-    label: 'Discharge note',
-    description: 'Status summary and next-step recommendations',
+    label: 'Discharge mode',
+    description: 'Same workspace with discharge summary support',
   },
 ]
 

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-const TAG = { SOAP:'#E1F5EE|#0F6E56', Progress:'#E6F1FB|#185FA5', Referral:'#FAEEDA|#BA7517', Discharge:'#FBEAF0|#993556' }
+const TAG = { SOAP:'#E1F5EE|#0F6E56', Progress:'#E6F1FB|#185FA5', Referral:'#FAEEDA|#BA7517', Discharge:'#FBEAF0|#993556', Insurance:'#EEE9FF|#6541C7' }
 function NoteTag({ type }) {
   const [bg, color] = (TAG[type] || TAG.SOAP).split('|')
   return <span style={{ background: bg, color, fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 100 }}>{type}</span>
@@ -55,18 +55,18 @@ export default function DashboardPage() {
         {/* Recent notes */}
         <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <span style={{ fontSize: 14, fontWeight: 500 }}>Recent pediatric notes</span>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>Recent notes</span>
             <Link href="/history" style={{ fontSize: 12, color: 'var(--teal)', textDecoration: 'none' }}>View all →</Link>
           </div>
           {loading ? (
             <p style={{ color: 'var(--gray)', fontSize: 13, padding: '1rem 0' }}>Loading…</p>
           ) : notes.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-              <p style={{ color: 'var(--gray)', fontSize: 13, marginBottom: '1rem' }}>No notes yet. Generate your first pediatric note.</p>
+              <p style={{ color: 'var(--gray)', fontSize: 13, marginBottom: '1rem' }}>No notes yet. Generate your first note.</p>
               <Link href="/soap" style={{
                 display: 'inline-block', padding: '9px 20px', borderRadius: 8,
                 background: 'var(--teal)', color: 'white', fontSize: 13, fontWeight: 500, textDecoration: 'none',
-              }}>Start pediatric workspace →</Link>
+              }}>Start workspace →</Link>
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>

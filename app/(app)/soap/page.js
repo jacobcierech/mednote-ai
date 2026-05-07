@@ -15,13 +15,22 @@ const ASSIST_LEVEL_OPTIONS = [
   'Max Assist',
 ];
 
-const VISIT_FOCUS_OPTIONS = [
+const PEDIATRIC_VISIT_FOCUS_OPTIONS = [
   'Pediatric OT',
   'Autism Support',
   'ADHD / Executive Function',
   'Sensory Integration',
   'School-Based Therapy',
   'Pediatric Neuro Rehab',
+];
+
+const OUTPATIENT_VISIT_FOCUS_OPTIONS = [
+  'Outpatient OT',
+  'Hand Therapy',
+  'Upper Extremity Rehab',
+  'Neuro Rehab',
+  'ADL / IADL Training',
+  'General Outpatient Rehab',
 ];
 
 const DEFICIT_OPTIONS = [
@@ -58,28 +67,39 @@ const SETTING_OPTIONS = [
 
 const NOTE_MENU_OPTIONS = {
   'outpatient-eval': {
-    badge: 'Outpatient eval flow',
+    badge: 'Pediatric eval mode',
     title: 'Pediatric outpatient eval and plan of care',
     description:
       'Best for new evaluations, updated goals, treatment planning, and insurance-ready pediatric outpatient documentation.',
+    track: 'pediatric',
   },
   progress: {
-    badge: 'Progress note flow',
+    badge: 'Pediatric progress mode',
     title: 'Pediatric outpatient progress note',
     description:
       'Best for fast visit capture, skilled intervention summaries, and same-day progress documentation.',
+    track: 'pediatric',
+  },
+  'outpatient-note': {
+    badge: 'Outpatient OT mode',
+    title: 'General outpatient documentation workspace',
+    description:
+      'Best for standard outpatient OT documentation, functional rehab visits, and non-pediatric daily workflow needs.',
+    track: 'outpatient',
   },
   insurance: {
-    badge: 'Insurance support flow',
+    badge: 'Insurance mode',
     title: 'Insurance and medical necessity note',
     description:
       'Best for plan-of-care wording, payer support language, frequency, duration, and continued skilled need.',
+    track: 'outpatient',
   },
   discharge: {
-    badge: 'Discharge flow',
+    badge: 'Discharge mode',
     title: 'Pediatric outpatient discharge summary',
     description:
       'Best for discharge status, caregiver carryover, next-step recommendations, and service wrap-up.',
+    track: 'outpatient',
   },
 };
 
@@ -371,6 +391,11 @@ export default function SoapPage() {
       ),
     [evalData.deficit, evalData.limitation, evalData.setting, form.assistLevel]
   );
+
+  const visitFocusOptions =
+    noteMenuMeta.track === 'outpatient'
+      ? OUTPATIENT_VISIT_FOCUS_OPTIONS
+      : PEDIATRIC_VISIT_FOCUS_OPTIONS;
 
   useEffect(() => {
     try {
@@ -817,14 +842,14 @@ export default function SoapPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                Note menu
+                Workspace mode
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                Use the sidebar dropdown to jump between pediatric outpatient eval, progress, insurance, and discharge note flows without changing the overall workspace.
+                The sidebar dropdown does not open separate pages. It keeps you in this same workspace and switches the note mode between pediatric and general outpatient documentation flows.
               </p>
             </div>
             <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700">
-              Active menu: {noteMenuMeta.badge}
+              Active mode: {noteMenuMeta.badge}
             </div>
           </div>
         </div>
@@ -1148,7 +1173,7 @@ export default function SoapPage() {
                       onChange={(e) => updateField('visitFocus', e.target.value)}
                       className={inputClass}
                     >
-                      {VISIT_FOCUS_OPTIONS.map((option) => (
+                      {visitFocusOptions.map((option) => (
                         <option key={option} value={option}>
                           {option}
                         </option>

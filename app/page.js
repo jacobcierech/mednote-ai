@@ -63,7 +63,7 @@ export default function HomePage() {
             <div>
               <p className="font-semibold tracking-tight text-slate-900">MedNote AI</p>
               <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                Pediatric Neurodiverse Therapy
+                Pediatric + Outpatient Therapy
               </p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function HomePage() {
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
             <div className="mb-5 inline-flex items-center rounded-full border border-teal-200 bg-white/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm">
-              AI Documentation Assistant for Pediatric Neurodiverse Therapy
+              AI Documentation Assistant for Pediatric and Outpatient Therapy
             </div>
             <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
               Reduce documentation burnout and spend more time supporting children
@@ -97,9 +97,9 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
               MedNote AI helps pediatric therapists turn rough session notes into
-              clearer, neurodiversity-affirming clinical documentation for
-              pediatric OT, SLP, PT, ABA, school-based therapy, and autism/ADHD
-              clinics.
+              clearer clinical documentation for pediatric neurodiverse care and
+              standard outpatient therapy workflows, including OT, SLP, PT, ABA,
+              school-based therapy, and general rehab visits.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
