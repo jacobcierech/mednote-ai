@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
@@ -15,7 +15,7 @@ const NAV = [
       <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>
     </svg>
   )},
-  { href: '/soap', label: 'Pediatric workspace', icon: (
+  { href: '/soap', label: 'Workspace', icon: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="3" y="3.5" width="10" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
       <path d="M5.5 6h5M5.5 8h5M5.5 10h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -35,41 +35,11 @@ const NAV = [
   )},
 ]
 
-const NOTE_MENU_OPTIONS = [
-  {
-    href: '/soap?noteMenu=outpatient-eval',
-    label: 'Pediatric eval mode',
-    description: 'Same workspace with pediatric eval, goals, and treatment planning',
-  },
-  {
-    href: '/soap?noteMenu=progress',
-    label: 'Pediatric progress mode',
-    description: 'Same workspace with fast pediatric progress-note support',
-  },
-  {
-    href: '/soap?noteMenu=outpatient-note',
-    label: 'Outpatient OT mode',
-    description: 'Same workspace with general outpatient OT documentation support',
-  },
-  {
-    href: '/soap?noteMenu=insurance',
-    label: 'Insurance mode',
-    description: 'Same workspace with medical necessity and plan-of-care support',
-  },
-  {
-    href: '/soap?noteMenu=discharge',
-    label: 'Discharge mode',
-    description: 'Same workspace with discharge summary support',
-  },
-]
-
 export default function AppLayout({ children }) {
   const router = useRouter()
   const pathname = usePathname()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [noteMenuOpen, setNoteMenuOpen] = useState(false)
-  const noteMenuRef = useRef(null)
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -80,17 +50,6 @@ export default function AppLayout({ children }) {
         setLoading(false)
       })
       .catch(() => router.push('/login'))
-  }, [])
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (!noteMenuRef.current?.contains(event.target)) {
-        setNoteMenuOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   async function handleLogout() {
@@ -131,86 +90,19 @@ export default function AppLayout({ children }) {
           </div>
 
           {/* New note button */}
-          <div style={{ padding: '0.75rem 0.6rem 0', position: 'relative' }} ref={noteMenuRef}>
-            <button
-              onClick={() => setNoteMenuOpen((prev) => !prev)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8,
-                padding: '10px 12px',
-                borderRadius: 8,
-                background: 'var(--teal)',
-                color: 'white',
-                fontSize: 13,
-                fontWeight: 500,
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'opacity 0.15s',
-              }}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 2v12M2 8h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                New pediatric note
-              </span>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ opacity: 0.9 }}>
-                <path d="M4 6l4 4 4-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          <div style={{ padding: '0.75rem 0.6rem 0' }}>
+            <Link href="/soap" style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '10px 12px', borderRadius: 8,
+              background: 'var(--teal)', color: 'white',
+              fontSize: 13, fontWeight: 500, textDecoration: 'none',
+              transition: 'opacity 0.15s',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 2v12M2 8h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
               </svg>
-            </button>
-
-            {noteMenuOpen && (
-              <div style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                left: 10,
-                right: 10,
-                background: 'white',
-                borderRadius: 14,
-                border: '1px solid var(--border)',
-                boxShadow: '0 18px 40px rgba(15, 23, 42, 0.18)',
-                padding: 8,
-                zIndex: 30,
-              }}>
-                <p style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: 'var(--gray)',
-                  padding: '4px 8px 8px',
-                }}>
-                  Pediatric outpatient notes
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {NOTE_MENU_OPTIONS.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setNoteMenuOpen(false)}
-                      style={{
-                        display: 'block',
-                        padding: '10px 10px',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        color: 'var(--ink)',
-                        background: 'white',
-                      }}
-                    >
-                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: 11.5, color: 'var(--gray)', lineHeight: 1.45 }}>
-                        {item.description}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+              New note
+            </Link>
           </div>
 
           {/* Nav */}

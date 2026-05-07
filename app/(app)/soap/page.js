@@ -15,16 +15,13 @@ const ASSIST_LEVEL_OPTIONS = [
   'Max Assist',
 ];
 
-const PEDIATRIC_VISIT_FOCUS_OPTIONS = [
+const VISIT_FOCUS_OPTIONS = [
   'Pediatric OT',
   'Autism Support',
   'ADHD / Executive Function',
   'Sensory Integration',
   'School-Based Therapy',
   'Pediatric Neuro Rehab',
-];
-
-const OUTPATIENT_VISIT_FOCUS_OPTIONS = [
   'Outpatient OT',
   'Hand Therapy',
   'Upper Extremity Rehab',
@@ -64,44 +61,6 @@ const SETTING_OPTIONS = [
   ['autism_clinic', 'Autism / ADHD-Focused Clinic'],
   ['early_intervention', 'Early Intervention'],
 ];
-
-const NOTE_MENU_OPTIONS = {
-  'outpatient-eval': {
-    badge: 'Pediatric eval mode',
-    title: 'Pediatric outpatient eval and plan of care',
-    description:
-      'Best for new evaluations, updated goals, treatment planning, and insurance-ready pediatric outpatient documentation.',
-    track: 'pediatric',
-  },
-  progress: {
-    badge: 'Pediatric progress mode',
-    title: 'Pediatric outpatient progress note',
-    description:
-      'Best for fast visit capture, skilled intervention summaries, and same-day progress documentation.',
-    track: 'pediatric',
-  },
-  'outpatient-note': {
-    badge: 'Outpatient OT mode',
-    title: 'General outpatient documentation workspace',
-    description:
-      'Best for standard outpatient OT documentation, functional rehab visits, and non-pediatric daily workflow needs.',
-    track: 'outpatient',
-  },
-  insurance: {
-    badge: 'Insurance mode',
-    title: 'Insurance and medical necessity note',
-    description:
-      'Best for plan-of-care wording, payer support language, frequency, duration, and continued skilled need.',
-    track: 'outpatient',
-  },
-  discharge: {
-    badge: 'Discharge mode',
-    title: 'Pediatric outpatient discharge summary',
-    description:
-      'Best for discharge status, caregiver carryover, next-step recommendations, and service wrap-up.',
-    track: 'outpatient',
-  },
-};
 
 const SAMPLE_FORM = {
   patientName: 'Demo Child',
@@ -365,8 +324,6 @@ function buildCasePayload(form, evalData, recommendations) {
 
 export default function SoapPage() {
   const searchParams = useSearchParams();
-  const selectedNoteMenu = searchParams.get('noteMenu') || 'outpatient-eval';
-  const noteMenuMeta = NOTE_MENU_OPTIONS[selectedNoteMenu] || NOTE_MENU_OPTIONS['outpatient-eval'];
   const [form, setForm] = useState(INITIAL_FORM);
   const [evalData, setEvalData] = useState(INITIAL_EVAL);
   const [soapNote, setSoapNote] = useState(null);
@@ -391,11 +348,6 @@ export default function SoapPage() {
       ),
     [evalData.deficit, evalData.limitation, evalData.setting, form.assistLevel]
   );
-
-  const visitFocusOptions =
-    noteMenuMeta.track === 'outpatient'
-      ? OUTPATIENT_VISIT_FOCUS_OPTIONS
-      : PEDIATRIC_VISIT_FOCUS_OPTIONS;
 
   useEffect(() => {
     try {
@@ -794,16 +746,15 @@ export default function SoapPage() {
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center rounded-full bg-teal-50 px-4 py-1.5 text-sm font-medium text-teal-700">
-              {noteMenuMeta.badge}
+              General outpatient documentation workspace
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-              {noteMenuMeta.title}
+              Built for real outpatient clinic workflow
             </h1>
             <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
-              {noteMenuMeta.description} Capture rough notes quickly, generate
-              payer-ready documentation, and move on. This workspace is built
-              for lean teams, private-pay clinics, and neurodiversity-affirming
-              pediatric care.
+              Capture rough notes quickly, generate payer-ready documentation,
+              and move on. This workspace supports pediatric and general
+              outpatient therapy with the same fast clinic-first model.
             </p>
           </div>
 
@@ -838,27 +789,11 @@ export default function SoapPage() {
           </div>
         ) : null}
 
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                Workspace mode
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                The sidebar dropdown does not open separate pages. It keeps you in this same workspace and switches the note mode between pediatric and general outpatient documentation flows.
-              </p>
-            </div>
-            <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700">
-              Active mode: {noteMenuMeta.badge}
-            </div>
-          </div>
-        </div>
-
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
           <div className="space-y-6">
             <SectionCard
               title="Fast Capture + AI Assist"
-              description="Use this first when the clinic is moving fast. Drop in rough notes once, then generate progress, discharge, insurance, assessment, and treatment planning support."
+                  description="Use this first when the clinic is moving fast. Drop in rough notes once, then generate progress, discharge, insurance, assessment, and treatment planning support across pediatric or general outpatient care."
             >
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="rounded-2xl border border-teal-100 bg-teal-50/80 p-4">
@@ -1173,7 +1108,7 @@ export default function SoapPage() {
                       onChange={(e) => updateField('visitFocus', e.target.value)}
                       className={inputClass}
                     >
-                      {visitFocusOptions.map((option) => (
+                      {VISIT_FOCUS_OPTIONS.map((option) => (
                         <option key={option} value={option}>
                           {option}
                         </option>

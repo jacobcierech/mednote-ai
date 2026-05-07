@@ -1,7 +1,7 @@
 const { NextResponse } = require('next/server');
 const { v4: uuidv4 } = require('uuid');
 const { getUserFromRequest } = require('lib/auth');
-const { many, one, transaction } = require('lib/db');
+const { many, one, execute } = require('lib/db');
 const { generateClinicalNote } = require('lib/openai');
 const { writeAuditLog } = require('lib/audit');
 
@@ -69,54 +69,52 @@ async function POST(request) {
     const noteId = uuidv4();
     const versionId = uuidv4();
 
-    await transaction(async (db) => {
-      await db.execute(
-        `INSERT INTO notes (
-          id, user_id, patient_label, note_type, specialty, diagnosis, visit_number,
-          precautions, interventions, deficits, assist_level, response, plan, shorthand_input, generated_note
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
-        [
-          noteId,
-          user.userId,
-          patientLabel,
-          noteType,
-          specialty,
-          diagnosis,
-          visitNumber,
-          precautions,
-          interventions,
-          deficits,
-          assistLevel,
-          patientResponse,
-          plan,
-          shorthandInput,
-          generatedNote,
-        ]
-      );
+    await execute(
+      `INSERT INTO notes (
+        id, user_id, patient_label, note_type, specialty, diagnosis, visit_number,
+        precautions, interventions, deficits, assist_level, response, plan, shorthand_input, generated_note
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+      [
+        noteId,
+        user.userId,
+        patientLabel,
+        noteType,
+        specialty,
+        diagnosis,
+        visitNumber,
+        precautions,
+        interventions,
+        deficits,
+        assistLevel,
+        patientResponse,
+        plan,
+        shorthandInput,
+        generatedNote,
+      ]
+    );
 
-      await db.execute(
-        `INSERT INTO note_versions (
-          id, note_id, version_number, generated_note, shorthand_input,
-          diagnosis, visit_number, precautions, interventions, deficits, assist_level, response, plan
-        )
-        VALUES ($1, $2, 1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-        [
-          versionId,
-          noteId,
-          generatedNote,
-          shorthandInput,
-          diagnosis,
-          visitNumber,
-          precautions,
-          interventions,
-          deficits,
-          assistLevel,
-          patientResponse,
-          plan,
-        ]
-      );
-    });
+    await execute(
+      `INSERT INTO note_versions (
+        id, note_id, version_number, generated_note, shorthand_input,
+        diagnosis, visit_number, precautions, interventions, deficits, assist_level, response, plan
+      )
+      VALUES ($1, $2, 1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        versionId,
+        noteId,
+        generatedNote,
+        shorthandInput,
+        diagnosis,
+        visitNumber,
+        precautions,
+        interventions,
+        deficits,
+        assistLevel,
+        patientResponse,
+        plan,
+      ]
+    );
 
     await writeAuditLog({ userId: user.userId, action: 'CREATE_NOTE', noteId, metadata: { noteType, specialty, patientLabel } });
 
