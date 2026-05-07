@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, useRef, createContext, useContext } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
@@ -15,7 +15,7 @@ const NAV = [
       <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>
     </svg>
   )},
-  { href: '/soap', label: 'New client', icon: (
+  { href: '/soap', label: 'Pediatric workspace', icon: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="3" y="3.5" width="10" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
       <path d="M5.5 6h5M5.5 8h5M5.5 10h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -35,11 +35,36 @@ const NAV = [
   )},
 ]
 
+const NOTE_MENU_OPTIONS = [
+  {
+    href: '/soap?noteMenu=outpatient-eval',
+    label: 'Outpatient eval',
+    description: 'New pediatric eval, goals, and treatment plan',
+  },
+  {
+    href: '/soap?noteMenu=progress',
+    label: 'Progress note',
+    description: 'Fast visit summary and skilled intervention note',
+  },
+  {
+    href: '/soap?noteMenu=insurance',
+    label: 'Insurance note',
+    description: 'Medical necessity, plan of care, and payer support',
+  },
+  {
+    href: '/soap?noteMenu=discharge',
+    label: 'Discharge note',
+    description: 'Status summary and next-step recommendations',
+  },
+]
+
 export default function AppLayout({ children }) {
   const router = useRouter()
   const pathname = usePathname()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [noteMenuOpen, setNoteMenuOpen] = useState(false)
+  const noteMenuRef = useRef(null)
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -50,6 +75,17 @@ export default function AppLayout({ children }) {
         setLoading(false)
       })
       .catch(() => router.push('/login'))
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (!noteMenuRef.current?.contains(event.target)) {
+        setNoteMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   async function handleLogout() {
@@ -78,54 +114,116 @@ export default function AppLayout({ children }) {
 
         {/* SIDEBAR */}
         <aside style={{
-          width: 248, flexShrink: 0,
-          background: 'linear-gradient(180deg, #102238 0%, #132a44 100%)',
+          width: 220, flexShrink: 0, background: 'var(--sidebar)',
           display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
-          boxShadow: '18px 0 40px rgba(11, 24, 39, 0.12)',
         }}>
           {/* Logo */}
           <div style={{
-            padding: '1.5rem 1.35rem', borderBottom: '1px solid rgba(255,255,255,0.08)',
-            fontFamily: 'Plus Jakarta Sans, DM Sans, sans-serif', fontSize: 22, fontWeight: 700, color: 'white',
+            padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.06)',
+            fontFamily: 'DM Serif Display, serif', fontSize: 20, color: 'white',
           }}>
-            MedNote<span style={{ color: '#7FE6D3', fontFamily: 'DM Sans, sans-serif', fontSize: 19 }}>AI</span>
+            MedNote<span style={{ color: 'var(--teal-mid)', fontFamily: 'DM Sans, sans-serif', fontSize: 18 }}>AI</span>
           </div>
 
           {/* New note button */}
-          <div style={{ padding: '1rem 0.85rem 0' }}>
-            <Link href="/soap" style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '14px 15px', borderRadius: 18,
-              background: 'linear-gradient(135deg, #22b59d 0%, #157a6e 100%)', color: 'white',
-              fontSize: 14, fontWeight: 600, textDecoration: 'none',
-              transition: 'opacity 0.15s, transform 0.15s',
-              boxShadow: '0 14px 30px rgba(21, 122, 110, 0.28)',
-            }}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M8 2v12M2 8h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          <div style={{ padding: '0.75rem 0.6rem 0', position: 'relative' }} ref={noteMenuRef}>
+            <button
+              onClick={() => setNoteMenuOpen((prev) => !prev)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 8,
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: 'var(--teal)',
+                color: 'white',
+                fontSize: 13,
+                fontWeight: 500,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'opacity 0.15s',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 2v12M2 8h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                New pediatric note
+              </span>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ opacity: 0.9 }}>
+                <path d="M4 6l4 4 4-4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              New client
-            </Link>
+            </button>
+
+            {noteMenuOpen && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: 10,
+                right: 10,
+                background: 'white',
+                borderRadius: 14,
+                border: '1px solid var(--border)',
+                boxShadow: '0 18px 40px rgba(15, 23, 42, 0.18)',
+                padding: 8,
+                zIndex: 30,
+              }}>
+                <p style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: 'var(--gray)',
+                  padding: '4px 8px 8px',
+                }}>
+                  Pediatric outpatient notes
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {NOTE_MENU_OPTIONS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setNoteMenuOpen(false)}
+                      style={{
+                        display: 'block',
+                        padding: '10px 10px',
+                        borderRadius: 10,
+                        textDecoration: 'none',
+                        color: 'var(--ink)',
+                        background: 'white',
+                      }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>
+                        {item.label}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--gray)', lineHeight: 1.45 }}>
+                        {item.description}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Nav */}
           <p style={{
             fontSize: 10, fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.34)', padding: '1.5rem 1.35rem 0.65rem',
+            color: 'rgba(255,255,255,0.25)', padding: '1.25rem 1.25rem 0.5rem',
           }}>Menu</p>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 0.85rem' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 0.6rem' }}>
             {NAV.map(item => {
               const active = pathname === item.href
               return (
                 <Link key={item.href} href={item.href} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '13px 14px', borderRadius: 18,
-                  fontSize: 14.5, textDecoration: 'none',
-                  color: active ? 'white' : 'rgba(255,255,255,0.64)',
-                  background: active ? 'linear-gradient(135deg, rgba(127,230,211,0.18) 0%, rgba(79,140,255,0.18) 100%)' : 'transparent',
-                  border: active ? '1px solid rgba(127,230,211,0.18)' : '1px solid transparent',
-                  transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+                  padding: '9px 12px', borderRadius: 8,
+                  fontSize: 13.5, textDecoration: 'none',
+                  color: active ? 'white' : 'rgba(255,255,255,0.55)',
+                  background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  transition: 'background 0.15s, color 0.15s',
                 }}>
                   <span style={{ opacity: active ? 1 : 0.7 }}>{item.icon}</span>
                   {item.label}
@@ -135,24 +233,24 @@ export default function AppLayout({ children }) {
           </nav>
 
           {/* User */}
-          <div style={{ marginTop: 'auto', padding: '1rem 0.85rem 1.1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 12px', borderRadius: 18, background: 'rgba(255,255,255,0.04)' }}>
+          <div style={{ marginTop: 'auto', padding: '1rem 0.6rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
-                  width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #22b59d 0%, #4f8cff 100%)',
+                  width: 30, height: 30, borderRadius: '50%', background: 'var(--teal)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 700, color: 'white', flexShrink: 0,
+                  fontSize: 11, fontWeight: 500, color: 'white', flexShrink: 0,
                 }}>
                   {user?.name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
                 </div>
                 <div>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.82)', fontWeight: 600 }}>{user?.name}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.42)' }}>Pro plan</p>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{user?.name}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>Pro plan</p>
                 </div>
               </div>
               <button onClick={handleLogout} title="Sign out" style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                color: 'rgba(255,255,255,0.42)', padding: 6, borderRadius: 10,
+                color: 'rgba(255,255,255,0.3)', padding: 4, borderRadius: 6,
                 transition: 'color 0.15s',
               }}>
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
@@ -167,26 +265,24 @@ export default function AppLayout({ children }) {
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
           {/* Topbar */}
           <div style={{
-            height: 72, flexShrink: 0, background: 'rgba(255,255,255,0.72)',
-            backdropFilter: 'blur(18px)',
-            borderBottom: '1px solid rgba(17, 32, 52, 0.08)',
+            height: 56, flexShrink: 0, background: 'white',
+            borderBottom: '1px solid var(--border)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 2rem',
+            padding: '0 1.75rem',
           }}>
-            <span style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Plus Jakarta Sans, DM Sans, sans-serif' }}>
+            <span style={{ fontSize: 16, fontWeight: 500 }}>
               {NAV.find(n => n.href === pathname)?.label || 'MedNote AI'}
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{
-                background: 'linear-gradient(135deg, #eef7ff 0%, #ffffff 100%)', color: '#24538f',
-                fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 100,
-                border: '1px solid #d6e7fb',
+                background: 'var(--amber-light)', color: 'var(--amber)',
+                fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 100,
               }}>Pro plan</span>
             </div>
           </div>
 
           {/* Page content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }} className="animate-fade-in">
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem' }} className="animate-fade-in">
             {children}
           </div>
         </main>

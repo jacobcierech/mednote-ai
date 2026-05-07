@@ -96,57 +96,33 @@ function buildPrompt({ patientName, visitFocus, diagnosis, precautions, visitNum
   return contextLines.join('\n');
 }
 
-function buildEvaluationPrompt(evaluationData = {}) {
-  const lines = [
-    evaluationData.setting && `Evaluation setting: ${evaluationData.setting}`,
-    evaluationData.patientGoals && `Patient goals: ${evaluationData.patientGoals}`,
-    evaluationData.pain && `Evaluation pain findings: ${evaluationData.pain}`,
-    evaluationData.rom && `ROM findings: ${evaluationData.rom}`,
-    evaluationData.strength && `Strength findings: ${evaluationData.strength}`,
-    evaluationData.standardizedAssessments &&
-      `Standardized assessments: ${evaluationData.standardizedAssessments}`,
-    evaluationData.functionalDeficits &&
-      `Functional deficits: ${evaluationData.functionalDeficits}`,
-    evaluationData.barriers && `Barriers: ${evaluationData.barriers}`,
-    evaluationData.strengths && `Strengths: ${evaluationData.strengths}`,
-    evaluationData.clinicalObservations &&
-      `Clinical observations: ${evaluationData.clinicalObservations}`,
-  ].filter(Boolean);
+const SYSTEM_PROMPT = `You are an experienced pediatric occupational therapist and documentation assistant for clinicians working with neurodiverse children.
 
-  return lines.join('\n');
-}
-
-const SYSTEM_PROMPT = `You are an experienced outpatient occupational therapist writing a real visit note.
-
-Write a concise but clinically rich SOAP note using only the provided details.
+Write a concise, clinically specific pediatric therapy SOAP note using only the provided details.
 
 Requirements:
 - Return valid JSON matching the schema exactly.
 - The objective field must be an array of short clinical statements.
-- Use OT-specific language that connects observed impairments to occupational performance.
-- Document skilled OT interventions, patient response, cueing, movement quality, symptom behavior, task demands, and functional carryover when provided.
-- Preserve concrete clinical details such as tendon glides, edema management, scar management, fine motor coordination, in-hand manipulation, bilateral hand use, proximal compensation, pacing, ergonomic modification, dressing fasteners, jar opening, keyboarding, grooming reach, and meal prep when supported by the input.
-- If evaluation findings are provided, carry them forward into the note so the assessment sounds grounded in the broader plan of care.
-- Show clinical reasoning. Explain why the current presentation still requires skilled OT.
-
-Language expectations:
-- favor specific wording like "required intermittent verbal cues to reduce compensatory shoulder elevation during reaching task" over generic wording like "patient needed cues"
-- use documentation-style language that sounds efficient and defensible
-- emphasize occupational performance, task quality, symptom provocation, endurance, dexterity, grasp/pinch demands, coordination, motor control, and functional participation when appropriate
+- Use pediatric therapy language that links support needs to participation in home, school, play, self-care, communication, and family routines.
+- Use neurodiversity-affirming wording that describes observable support needs, regulation, access, communication, and participation.
+- Be specific about skilled interventions, sensory supports, visual supports, executive functioning supports, caregiver education, school carryover, cues, task demands, and child response when provided.
+- Favor concrete phrases like "used visual schedule and first-then language during transition from preferred activity" over vague summaries.
+- Preserve useful clinical specifics such as sensory preparation, proprioceptive input, vestibular input, co-regulation, visual schedule, task chunking, transition support, handwriting, shoe tying, self-care routines, classroom participation, IEP support, caregiver education, and developmental milestones when supported by the input.
 
 Avoid:
 - generic filler
 - motivational language
 - "tolerated session well" unless explicitly supported
 - "making progress" unless clearly supported
-- repeating the same phrase across multiple sections
-- inventing measurements, goals, frequency, duration, or progress not present in the input
+- deficit-focused or stigmatizing language such as "noncompliant," "bad behavior," "tantrum," "refused," "manipulative," or "attention seeking"; describe what was observed and what support was needed instead
+- restating the same sentence across sections
+- inventing measurements, milestones, IEP details, diagnoses, goals, frequency, duration, or progress not present in the input
 
 Section guidance:
-- Subjective: summarize patient-reported symptoms, functional complaints, and symptom behavior only.
-- Objective: list skilled OT interventions, education, cueing, and observable task performance in short statements.
-- Assessment: interpret how current deficits affect occupational performance and why skilled OT remains indicated at this stage.
-- Plan: state the next OT focus with specific treatment priorities, progression targets, or task areas.`;
+- Subjective: summarize caregiver, child, teacher, or clinician-reported concerns and routine impacts only.
+- Objective: list skilled therapy interventions, caregiver or school education, supports used, cues, and observed participation.
+- Assessment: interpret how regulation, sensory, motor, executive functioning, communication, or developmental support needs affect participation and why skilled therapy remains indicated.
+- Plan: state the next clinical focus with specific pediatric therapy priorities and carryover needs.`;
 
 export async function POST(request) {
   try {
@@ -166,17 +142,15 @@ export async function POST(request) {
       visitNumber = '',
       caseContext = '',
       visitData = {},
-      evaluationData = {},
     } = body || {};
 
-    const evaluationPrompt = buildEvaluationPrompt(evaluationData);
     const prompt = buildPrompt({
       patientName,
       visitFocus,
       diagnosis,
       precautions,
       visitNumber,
-      caseContext: [caseContext, evaluationPrompt].filter(Boolean).join('\n'),
+      caseContext,
       visitData: {
         subjectiveReport: visitData.subjectiveReport || '',
         interventionsCompleted: visitData.interventionsCompleted || '',

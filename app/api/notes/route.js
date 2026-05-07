@@ -1,7 +1,7 @@
 const { NextResponse } = require('next/server');
 const { v4: uuidv4 } = require('uuid');
 const { getUserFromRequest } = require('lib/auth');
-const { many, one, transaction } = require('lib/db');
+const { getDb } = require('lib/db');
 const { generateClinicalNote } = require('lib/openai');
 const { writeAuditLog } = require('lib/audit');
 
@@ -14,18 +14,19 @@ async function GET(request) {
   const type = searchParams.get('type');
   const limit = parseInt(searchParams.get('limit') || '50');
 
-  let query = 'SELECT * FROM notes WHERE user_id = $1';
+  const db = getDb();
+  let query = 'SELECT * FROM notes WHERE user_id = ?';
   const params = [user.userId];
 
   if (type && type !== 'all') {
-    query += ` AND note_type = $${params.length + 1}`;
+    query += ' AND note_type = ?';
     params.push(type);
   }
 
-  query += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
+  query += ' ORDER BY created_at DESC LIMIT ?';
   params.push(limit);
 
-  const notes = await many(query, params);
+  const notes = db.prepare(query).all(...params);
   return NextResponse.json({ notes });
 }
 
@@ -43,14 +44,14 @@ async function POST(request) {
       specialty = 'Primary Care',
       shorthandInput = '',
       generatedNote: providedGeneratedNote = '',
-      diagnosis = nestedFields.diagnosis || '',
-      visitNumber = nestedFields.visitNumber || '',
-      precautions = nestedFields.precautions || '',
-      interventions = nestedFields.interventions || '',
-      deficits = nestedFields.deficits || '',
-      assistLevel = nestedFields.assistLevel || '',
-      response: patientResponse = nestedFields.response || '',
-      plan = nestedFields.plan || '',
+      diagnosis = body.diagnosis || nestedFields.diagnosis || '',
+      visitNumber = body.visitNumber || nestedFields.visitNumber || '',
+      precautions = body.precautions || nestedFields.precautions || '',
+      interventions = body.interventions || nestedFields.interventions || '',
+      deficits = body.deficits || nestedFields.deficits || '',
+      assistLevel = body.assistLevel || nestedFields.assistLevel || '',
+      response: patientResponse = body.response || nestedFields.response || '',
+      plan = body.plan || nestedFields.plan || '',
     } = body;
 
     if (!providedGeneratedNote.trim() && !shorthandInput.trim() && !diagnosis.trim()) {
@@ -68,59 +69,27 @@ async function POST(request) {
 
     const noteId = uuidv4();
     const versionId = uuidv4();
+    const db = getDb();
 
-    await transaction(async (db) => {
-      await db.execute(
-        `INSERT INTO notes (
-          id, user_id, patient_label, note_type, specialty, diagnosis, visit_number,
-          precautions, interventions, deficits, assist_level, response, plan, shorthand_input, generated_note
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
-        [
-          noteId,
-          user.userId,
-          patientLabel,
-          noteType,
-          specialty,
-          diagnosis,
-          visitNumber,
-          precautions,
-          interventions,
-          deficits,
-          assistLevel,
-          patientResponse,
-          plan,
-          shorthandInput,
-          generatedNote,
-        ]
-      );
+    // Save note
+    db.prepare(`
+      INSERT INTO notes (id, user_id, patient_label, note_type, specialty, diagnosis, visit_number,
+        precautions, interventions, deficits, assist_level, response, plan, shorthand_input, generated_note)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(noteId, user.userId, patientLabel, noteType, specialty, diagnosis, visitNumber,
+      precautions, interventions, deficits, assistLevel, patientResponse, plan, shorthandInput, generatedNote);
 
-      await db.execute(
-        `INSERT INTO note_versions (
-          id, note_id, version_number, generated_note, shorthand_input,
-          diagnosis, visit_number, precautions, interventions, deficits, assist_level, response, plan
-        )
-        VALUES ($1, $2, 1, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-        [
-          versionId,
-          noteId,
-          generatedNote,
-          shorthandInput,
-          diagnosis,
-          visitNumber,
-          precautions,
-          interventions,
-          deficits,
-          assistLevel,
-          patientResponse,
-          plan,
-        ]
-      );
-    });
+    // Save version 1
+    db.prepare(`
+      INSERT INTO note_versions (id, note_id, version_number, generated_note, shorthand_input,
+        diagnosis, visit_number, precautions, interventions, deficits, assist_level, response, plan)
+      VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(versionId, noteId, generatedNote, shorthandInput, diagnosis, visitNumber,
+      precautions, interventions, deficits, assistLevel, patientResponse, plan);
 
-    await writeAuditLog({ userId: user.userId, action: 'CREATE_NOTE', noteId, metadata: { noteType, specialty, patientLabel } });
+    writeAuditLog({ userId: user.userId, action: 'CREATE_NOTE', noteId, metadata: { noteType, specialty, patientLabel } });
 
-    const note = await one('SELECT * FROM notes WHERE id = $1', [noteId]);
+    const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(noteId);
     return NextResponse.json({ note, generatedNote });
 
   } catch (err) {
