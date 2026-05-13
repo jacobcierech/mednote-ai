@@ -1,9 +1,9 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'MedNote AI | Pediatric Neurodiverse Therapy Documentation',
+  title: 'MedNote AI | Therapy Documentation Workspace',
   description:
-    'AI documentation assistant for pediatric neurodiverse therapy. Reduce documentation burnout and spend more time supporting children and families.',
+    'AI documentation assistant for pediatric and outpatient therapy. Reduce documentation burnout, save time, and keep clinician oversight front and center.',
 }
 
 export default function RootLayout({ children }) {

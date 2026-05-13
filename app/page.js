@@ -2,16 +2,16 @@ import Link from 'next/link';
 
 const featureCards = [
   {
-    eyebrow: 'Pediatric SOAP',
-    title: 'Documentation tuned for neurodiverse pediatric therapy',
+    eyebrow: 'Outpatient workflow',
+    title: 'Documentation tuned for fast outpatient therapy care',
     body:
-      'Generate clinician-reviewed SOAP drafts for pediatric OT, SLP, PT, ABA, and school-based services with language that reflects sensory regulation, participation, caregiver carryover, and executive functioning support.',
+      'Generate clinician-reviewed SOAP drafts for pediatric and general outpatient therapy with language that can support neurodiverse care, functional rehab, caregiver carryover, and day-to-day clinic workflow.',
   },
   {
-    eyebrow: 'Caregiver + School',
-    title: 'Support family communication and IEP-aligned workflows',
+    eyebrow: 'Context-aware',
+    title: 'Support family, school, and standard outpatient communication',
     body:
-      'Draft parent-friendly summaries, school participation updates, and therapist-facing documentation that stays aligned with classroom supports, routines, and function-first goals.',
+      'Draft parent-friendly summaries, school participation updates, and therapist-facing documentation without forcing every visit into a pediatric-only frame.',
   },
   {
     eyebrow: 'Burnout Relief',
@@ -22,9 +22,9 @@ const featureCards = [
 ];
 
 const workflowSteps = [
-  'Paste rough notes from a sensory integration, executive functioning, or school-based session.',
-  'Choose a pediatric therapy workflow such as autism support, ADHD/executive function, or school participation.',
-  'Generate a structured draft with neurodiversity-affirming clinical language for review and editing.',
+  'Paste rough notes from a pediatric or standard outpatient therapy visit.',
+  'Add only the context you need for the case instead of filling every field every time.',
+  'Generate a structured draft with strong clinical language for review and editing.',
 ];
 
 const featureList = [

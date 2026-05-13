@@ -135,8 +135,8 @@ const INITIAL_EVAL = {
 
 function Field({ label, children }) {
   return (
-    <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+    <div className="space-y-1.5">
+      <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</label>
       {children}
     </div>
   );
@@ -144,11 +144,12 @@ function Field({ label, children }) {
 
 function SectionCard({ title, description, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+    <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div className="mb-5">
+        <div className="mb-3 h-1.5 w-16 rounded-full bg-gradient-to-r from-teal-500 via-sky-500 to-transparent" />
+        <h2 className="text-[1.15rem] font-semibold text-slate-950">{title}</h2>
         {description ? (
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
+          <p className="mt-1.5 max-w-3xl text-sm leading-6 text-slate-500">{description}</p>
         ) : null}
       </div>
       {children}
@@ -270,17 +271,17 @@ function buildToolkitNotePayloads(form, evalData, recommendations, toolkitResult
 
 function ToolkitCard({ title, body, items }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+    <div className="rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-slate-50 to-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
         {title}
       </h3>
       {body ? (
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">
           {body}
         </p>
       ) : null}
       {items?.length ? (
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
           {items.map((item, index) => (
             <li key={`${item}-${index}`}>{item}</li>
           ))}
@@ -337,6 +338,21 @@ export default function SoapPage() {
   const [copiedToolkit, setCopiedToolkit] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [caseSaved, setCaseSaved] = useState(false);
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+
+  const resetWorkspace = () => {
+    setForm(INITIAL_FORM);
+    setEvalData(INITIAL_EVAL);
+    setSoapNote(null);
+    setToolkitResult(null);
+    setError('');
+    setToolkitError('');
+    setCopied(false);
+    setCopiedToolkit('');
+    setSaveMessage('');
+    setCaseSaved(false);
+    setShowAdvancedFields(false);
+  };
 
   const recommendations = useMemo(
     () =>
@@ -350,6 +366,12 @@ export default function SoapPage() {
   );
 
   useEffect(() => {
+    if (searchParams.get('reset') === '1') {
+      localStorage.removeItem('mednote_active_case');
+      resetWorkspace();
+      return;
+    }
+
     try {
       const savedCase = localStorage.getItem('mednote_active_case');
       if (!savedCase) return;
@@ -385,7 +407,7 @@ export default function SoapPage() {
     } catch (loadError) {
       console.error('Failed to load saved case context:', loadError);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (searchParams.get('demo') !== '1') return;
@@ -423,6 +445,7 @@ export default function SoapPage() {
     setCopiedToolkit('');
     setSaveMessage('');
     setCaseSaved(false);
+    setShowAdvancedFields(true);
   };
 
   const handleSaveCase = () => {
@@ -741,35 +764,49 @@ export default function SoapPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-8">
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-[1500px] px-2 py-3 md:px-3">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <div className="mb-2 inline-flex items-center rounded-full bg-teal-50 px-4 py-1.5 text-sm font-medium text-teal-700">
-              General outpatient documentation workspace
+            <div className="mb-3 inline-flex items-center rounded-full border border-white/80 bg-white/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-[0_10px_20px_rgba(15,23,42,0.04)]">
+              General therapy documentation workspace
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-4xl font-bold tracking-tight text-slate-950 md:text-[3.15rem]">
               Built for real outpatient clinic workflow
             </h1>
-            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
+            <p className="mt-3 max-w-3xl text-[15px] leading-8 text-slate-600">
               Capture rough notes quickly, generate payer-ready documentation,
               and move on. This workspace supports pediatric and general
               outpatient therapy with the same fast clinic-first model.
             </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              {[
+                'Fast rough-note capture',
+                'SOAP + progress + insurance',
+                'Built for high-volume clinic flow',
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-full border border-white/80 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 shadow-[0_8px_18px_rgba(15,23,42,0.04)]"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={handleFillSample}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm font-medium text-slate-700 shadow-[0_10px_20px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-white"
             >
               Fill Sample
             </button>
             <button
               type="button"
               onClick={handleSaveCase}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="rounded-2xl bg-gradient-to-r from-slate-950 to-slate-800 px-5 py-3 text-sm font-medium text-white shadow-[0_16px_30px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5"
             >
               Save Eval Context
             </button>
@@ -793,10 +830,23 @@ export default function SoapPage() {
           <div className="space-y-6">
             <SectionCard
               title="Fast Capture + AI Assist"
-                  description="Use this first when the clinic is moving fast. Drop in rough notes once, then generate progress, discharge, insurance, assessment, and treatment planning support across pediatric or general outpatient care."
+              description="Use this first when the clinic is moving fast. Drop in rough notes once, then generate progress, discharge, insurance, assessment, and treatment planning support across pediatric or general outpatient care."
             >
+              <div className="mb-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedFields((prev) => !prev)}
+                  className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
+                >
+                  {showAdvancedFields ? 'Hide optional eval fields' : 'Show optional eval fields'}
+                </button>
+                <p className="text-sm text-slate-500">
+                  Fast path: rough notes first. The longer eval/context fields are optional.
+                </p>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-4">
-                <div className="rounded-2xl border border-teal-100 bg-teal-50/80 p-4">
+                <div className="rounded-[24px] border border-teal-100/80 bg-gradient-to-br from-teal-50 to-white p-4 shadow-[0_10px_30px_rgba(18,122,117,0.06)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
                     Session note
                   </p>
@@ -804,7 +854,7 @@ export default function SoapPage() {
                     Build a fast progress note from rough session details.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-sky-100 bg-sky-50/80 p-4">
+                <div className="rounded-[24px] border border-sky-100/80 bg-gradient-to-br from-sky-50 to-white p-4 shadow-[0_10px_30px_rgba(77,134,255,0.06)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
                     Discharge draft
                   </p>
@@ -812,7 +862,7 @@ export default function SoapPage() {
                     Get a concise discharge summary when caseloads shift quickly.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-violet-100 bg-violet-50/80 p-4">
+                <div className="rounded-[24px] border border-violet-100/80 bg-gradient-to-br from-violet-50 to-white p-4 shadow-[0_10px_30px_rgba(109,40,217,0.05)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
                     Insurance support
                   </p>
@@ -820,7 +870,7 @@ export default function SoapPage() {
                     Generate skilled-need language for medical necessity review.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-amber-100 bg-amber-50/80 p-4">
+                <div className="rounded-[24px] border border-amber-100/80 bg-gradient-to-br from-amber-50 to-white p-4 shadow-[0_10px_30px_rgba(173,117,35,0.05)]">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                     Plan next steps
                   </p>
@@ -846,7 +896,7 @@ export default function SoapPage() {
                   type="button"
                   onClick={handleGenerateToolkit}
                   disabled={isToolkitLoading}
-                  className="rounded-xl bg-teal-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-teal-300"
+                  className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(18,122,117,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
                 >
                   {isToolkitLoading ? 'Generating Clinic Tools...' : 'Generate Progress + Discharge + Insurance Tools'}
                 </button>
@@ -865,10 +915,11 @@ export default function SoapPage() {
               ) : null}
             </SectionCard>
 
-            <SectionCard
-              title="Child And Family Context"
-              description="Keep this lean but high-yield: strengths, routines, barriers, and caregiver priorities that should shape documentation across visits."
-            >
+            {showAdvancedFields ? (
+              <SectionCard
+                title="Optional Eval And Context"
+                description="Use these only when you want richer context for the AI. For a fast note, you can skip them."
+              >
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Child Label">
                   <input
@@ -986,12 +1037,14 @@ export default function SoapPage() {
                   />
                 </Field>
               </div>
-            </SectionCard>
+              </SectionCard>
+            ) : null}
 
-            <SectionCard
-              title="Pediatric Recommendation Builder"
-              description="Use support need and participation context to quickly pull pediatric assessment, intervention, and goal ideas."
-            >
+            {showAdvancedFields ? (
+              <SectionCard
+                title="Recommendations"
+                description="Optional assessment, intervention, and goal ideas based on the context you entered."
+              >
               <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Primary Support Need">
                   <select
@@ -1042,14 +1095,14 @@ export default function SoapPage() {
                 <button
                   type="button"
                   onClick={applyRecommendationsToVisit}
-                  className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                  className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_26px_rgba(18,122,117,0.18)] transition hover:-translate-y-0.5"
                 >
                   Apply To SOAP Inputs
                 </button>
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-slate-50 to-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Assessment Recommendations
                   </h3>
@@ -1060,7 +1113,7 @@ export default function SoapPage() {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-slate-50 to-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Intervention Recommendations
                   </h3>
@@ -1071,7 +1124,7 @@ export default function SoapPage() {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-slate-50 to-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Suggested Goals
                   </h3>
@@ -1085,7 +1138,7 @@ export default function SoapPage() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[24px] border border-slate-200/70 bg-gradient-to-br from-slate-50 to-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                     Clinical Reasoning
                   </h3>
@@ -1094,7 +1147,8 @@ export default function SoapPage() {
                   </p>
                 </div>
               </div>
-            </SectionCard>
+              </SectionCard>
+            ) : null}
 
             <SectionCard
               title="Visit SOAP Input"
@@ -1205,7 +1259,7 @@ export default function SoapPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                    className="rounded-2xl bg-gradient-to-r from-slate-950 to-slate-800 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(15,23,42,0.16)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-400"
                   >
                     {isLoading ? 'Generating SOAP Note...' : 'Generate SOAP Note'}
                   </button>
@@ -1231,7 +1285,7 @@ export default function SoapPage() {
               title="Workflow"
               description="Designed for small teams who need documentation support without adding friction."
             >
-              <ul className="list-disc space-y-2 pl-5 text-sm text-slate-700">
+              <ul className="list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
                 <li>Paste rough notes once and generate multiple note types fast.</li>
                 <li>Review assessment, treatment plan, and goal suggestions before finalizing care decisions.</li>
                 <li>Use the SOAP section only when you need a structured session draft.</li>
@@ -1261,7 +1315,7 @@ export default function SoapPage() {
                     <button
                       type="button"
                       onClick={handleCopyToolkit}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                      className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
                     >
                       {copiedToolkit ? 'Copied' : 'Copy Toolkit'}
                     </button>
@@ -1269,7 +1323,7 @@ export default function SoapPage() {
                       type="button"
                       onClick={handleSaveToolkitToHistory}
                       disabled={isSaving}
-                      className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-teal-300"
+                      className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(18,122,117,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
                     >
                       {isSaving ? 'Saving...' : 'Save Toolkit To History'}
                     </button>
@@ -1353,7 +1407,7 @@ export default function SoapPage() {
                     <button
                       type="button"
                       onClick={handleCopy}
-                      className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                      className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
                     >
                       {copied ? 'Copied' : 'Copy SOAP Note'}
                     </button>
@@ -1361,7 +1415,7 @@ export default function SoapPage() {
                       type="button"
                       onClick={handleSaveToHistory}
                       disabled={isSaving}
-                      className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-teal-300"
+                      className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(18,122,117,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
                     >
                       {isSaving ? 'Saving...' : 'Save To History'}
                     </button>
@@ -1374,19 +1428,19 @@ export default function SoapPage() {
                   ) : null}
 
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                       Subjective
                     </h3>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700">
                       {soapNote.subjective}
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                       Objective
                     </h3>
-                    <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+                    <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
                       {soapNote.objective.map((item, index) => (
                         <li key={`${item}-${index}`}>{item}</li>
                       ))}
@@ -1394,19 +1448,19 @@ export default function SoapPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                       Assessment
                     </h3>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700">
                       {soapNote.assessment}
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                       Plan
                     </h3>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700">
                       {soapNote.plan}
                     </p>
                   </div>
@@ -1421,4 +1475,4 @@ export default function SoapPage() {
 }
 
 const inputClass =
-  'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100';
+  'w-full rounded-[20px] border border-slate-200/80 bg-white/90 px-4 py-3.5 text-sm text-slate-900 shadow-[0_8px_22px_rgba(15,23,42,0.03)] outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100/80';

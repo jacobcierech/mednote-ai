@@ -74,29 +74,36 @@ export default function AppLayout({ children }) {
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
-      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', padding: '14px', gap: '14px' }}>
 
         {/* SIDEBAR */}
         <aside style={{
-          width: 220, flexShrink: 0, background: 'var(--sidebar)',
-          display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden',
-        }}>
+          width: 236, flexShrink: 0, background: 'linear-gradient(180deg, #102033 0%, #132740 100%)',
+          display: 'flex', flexDirection: 'column', height: 'calc(100vh - 28px)', overflow: 'hidden',
+          borderRadius: 28, boxShadow: '0 24px 60px rgba(10, 20, 35, 0.24)', border: '1px solid rgba(255,255,255,0.06)',
+        }} className="glass-panel">
           {/* Logo */}
           <div style={{
-            padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.06)',
-            fontFamily: 'DM Serif Display, serif', fontSize: 20, color: 'white',
+            padding: '1.35rem 1.35rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.07)',
+            fontSize: 21, color: 'white', display: 'flex', flexDirection: 'column', gap: 6,
           }}>
-            MedNote<span style={{ color: 'var(--teal-mid)', fontFamily: 'DM Sans, sans-serif', fontSize: 18 }}>AI</span>
+            <div style={{ fontFamily: 'Plus Jakarta Sans, DM Sans, sans-serif', fontWeight: 700 }}>
+              MedNote<span style={{ color: 'var(--teal-mid)', fontSize: 19 }}>AI</span>
+            </div>
+            <p style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.48)', lineHeight: 1.5 }}>
+              Fast documentation workspace for real clinic flow.
+            </p>
           </div>
 
           {/* New note button */}
           <div style={{ padding: '0.75rem 0.6rem 0' }}>
-            <Link href="/soap" style={{
+            <Link href="/soap?reset=1" style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              padding: '10px 12px', borderRadius: 8,
-              background: 'var(--teal)', color: 'white',
-              fontSize: 13, fontWeight: 500, textDecoration: 'none',
-              transition: 'opacity 0.15s',
+              padding: '12px 14px', borderRadius: 16,
+              background: 'linear-gradient(135deg, #1db39f 0%, #127a75 100%)', color: 'white',
+              fontSize: 13.5, fontWeight: 600, textDecoration: 'none',
+              transition: 'opacity 0.15s, transform 0.15s',
+              boxShadow: '0 14px 30px rgba(18, 122, 117, 0.28)',
             }}>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 2v12M2 8h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
@@ -108,7 +115,7 @@ export default function AppLayout({ children }) {
           {/* Nav */}
           <p style={{
             fontSize: 10, fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.25)', padding: '1.25rem 1.25rem 0.5rem',
+            color: 'rgba(255,255,255,0.28)', padding: '1.35rem 1.25rem 0.6rem',
           }}>Menu</p>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 0.6rem' }}>
             {NAV.map(item => {
@@ -116,11 +123,12 @@ export default function AppLayout({ children }) {
               return (
                 <Link key={item.href} href={item.href} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '9px 12px', borderRadius: 8,
-                  fontSize: 13.5, textDecoration: 'none',
+                  padding: '11px 12px', borderRadius: 14,
+                  fontSize: 13.5, textDecoration: 'none', fontWeight: active ? 600 : 500,
                   color: active ? 'white' : 'rgba(255,255,255,0.55)',
-                  background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  background: active ? 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.08) 100%)' : 'transparent',
                   transition: 'background 0.15s, color 0.15s',
+                  border: active ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
                 }}>
                   <span style={{ opacity: active ? 1 : 0.7 }}>{item.icon}</span>
                   {item.label}
@@ -131,10 +139,10 @@ export default function AppLayout({ children }) {
 
           {/* User */}
           <div style={{ marginTop: 'auto', padding: '1rem 0.6rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 18, background: 'rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
-                  width: 30, height: 30, borderRadius: '50%', background: 'var(--teal)',
+                  width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #23b7a4 0%, #127a75 100%)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 11, fontWeight: 500, color: 'white', flexShrink: 0,
                 }}>
@@ -159,27 +167,32 @@ export default function AppLayout({ children }) {
         </aside>
 
         {/* MAIN */}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 28px)', overflow: 'hidden', borderRadius: 30 }} className="glass-panel">
           {/* Topbar */}
           <div style={{
-            height: 56, flexShrink: 0, background: 'white',
-            borderBottom: '1px solid var(--border)',
+            height: 64, flexShrink: 0, background: 'rgba(255,255,255,0.44)',
+            borderBottom: '1px solid rgba(16, 32, 51, 0.06)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '0 1.75rem',
+            backdropFilter: 'blur(16px)'
           }}>
-            <span style={{ fontSize: 16, fontWeight: 500 }}>
+            <div>
+              <span style={{ fontSize: 17, fontWeight: 700, fontFamily: 'Plus Jakarta Sans, DM Sans, sans-serif' }}>
               {NAV.find(n => n.href === pathname)?.label || 'MedNote AI'}
-            </span>
+              </span>
+              <p style={{ fontSize: 11.5, color: 'var(--gray)', marginTop: 2 }}>Designed for fast documentation with clinician oversight.</p>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{
-                background: 'var(--amber-light)', color: 'var(--amber)',
-                fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 100,
+                background: 'rgba(255,255,255,0.72)', color: 'var(--amber)',
+                fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 999,
+                border: '1px solid rgba(173,117,35,0.15)'
               }}>Pro plan</span>
             </div>
           </div>
 
           {/* Page content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem' }} className="animate-fade-in">
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 1.85rem 2rem' }} className="animate-fade-in">
             {children}
           </div>
         </main>
