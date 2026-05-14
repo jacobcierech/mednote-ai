@@ -1,59 +1,49 @@
 import Link from 'next/link';
+import SiteFooter from '../components/SiteFooter';
 
-const featureCards = [
+const coreSections = [
   {
-    eyebrow: 'Outpatient workflow',
-    title: 'Documentation tuned for fast outpatient therapy care',
+    eyebrow: 'Built for OT documentation',
+    title: 'Structured drafts for real occupational therapy workflow',
     body:
-      'Generate clinician-reviewed SOAP drafts for pediatric and general outpatient therapy with language that can support neurodiverse care, functional rehab, caregiver carryover, and day-to-day clinic workflow.',
+      'Generate SOAP notes, progress notes, discharge drafts, insurance-support language, and plan-of-care summaries from rough OT session notes without forcing clinicians into a generic AI workflow.',
   },
   {
-    eyebrow: 'Context-aware',
-    title: 'Support family, school, and standard outpatient communication',
+    eyebrow: 'De-identified workflow',
+    title: 'Safety prompts built around de-identification',
     body:
-      'Draft parent-friendly summaries, school participation updates, and therapist-facing documentation without forcing every visit into a pediatric-only frame.',
+      'The workspace warns users not to enter names, DOBs, contact details, MRNs, insurance identifiers, school names, or other PHI, and it adds an explicit de-identification confirmation before generation.',
   },
   {
-    eyebrow: 'Burnout Relief',
-    title: 'Turn rough notes into polished clinical documentation',
+    eyebrow: 'Clinician-reviewed outputs',
+    title: 'AI drafts stay under clinician control',
     body:
-      'Paste shorthand notes, observations, and intervention details, then generate a cleaner first draft so clinicians spend less time formatting and more time supporting children and families.',
+      'Outputs are positioned as draft documentation only. Clinicians stay responsible for review, editing, final wording, and whether a note should be used in the chart.',
+  },
+  {
+    eyebrow: 'Copy / export workflow',
+    title: 'Move drafts out quickly when the clinic is busy',
+    body:
+      'Copy, download, clear, regenerate, and save drafts so the tool feels practical for beta testing in real outpatient OT workflow.',
   },
 ];
 
-const workflowSteps = [
-  'Paste rough notes from a pediatric or standard outpatient therapy visit.',
-  'Add only the context you need for the case instead of filling every field every time.',
-  'Generate a structured draft with strong clinical language for review and editing.',
-];
-
-const featureList = [
-  'Autism and ADHD-specific SOAP note templates',
-  'Sensory integration and regulation session documentation',
-  'Executive functioning goal generation',
-  'Behavioral observation and participation summaries',
-  'Parent / caregiver summary generator',
-  'School and IEP-aligned documentation support',
-  'Goal bank for pediatric OT, SLP, PT, and neuro rehab',
-  'Progress note comparison and carryover tracking',
+const betaChecklist = [
+  'Paste rough OT notes instead of formatting from scratch.',
+  'Keep inputs de-identified before generation.',
+  'Review AI output before copying into your own documentation workflow.',
+  'Use copy/export controls for a faster end-of-day workflow.',
 ];
 
 const trustItems = [
-  'Clinician oversight remains central. Drafts are designed to support, not replace, clinical judgment.',
-  'HIPAA/privacy messaging can be expanded as infrastructure hardens, BAA coverage is clarified, and storage architecture is finalized.',
-  'Designed around neurodiversity-affirming care language rather than deficit-heavy generic medical phrasing.',
-];
-
-const futureModules = [
-  'Developmental milestone tracking',
-  'Progress comparison over time',
-  'Goal bank by discipline and age range',
-  'Demo mode for sales conversations and clinic pilots',
+  'HIPAA-conscious positioning without claiming HIPAA compliance.',
+  'De-identified workflow prompts based on common HHS de-identification guidance concepts.',
+  'Clear clinician-review disclaimers around every generated draft.',
 ];
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(187,233,242,0.42),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(255,220,209,0.34),_transparent_24%),linear-gradient(180deg,_#fcfeff_0%,_#f4faf8_100%)] text-slate-900">
+    <main className="min-h-screen bg-[linear-gradient(180deg,_#f7fbfd_0%,_#eef4f8_100%)] text-slate-900">
       <section className="border-b border-slate-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
           <div className="flex items-center gap-3">
@@ -63,7 +53,7 @@ export default function HomePage() {
             <div>
               <p className="font-semibold tracking-tight text-slate-900">MedNote AI</p>
               <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                Pediatric + Outpatient Therapy
+                Occupational Therapy Documentation
               </p>
             </div>
           </div>
@@ -86,25 +76,22 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-24">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.02fr_0.98fr]">
           <div>
-            <div className="mb-5 inline-flex items-center rounded-full border border-teal-200 bg-white/80 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm">
-              AI Documentation Assistant for Pediatric and Outpatient Therapy
+            <div className="mb-5 inline-flex items-center rounded-full border border-teal-200 bg-white/85 px-4 py-2 text-sm font-medium text-teal-700 shadow-sm">
+              AI Documentation Assistant for Occupational Therapy
             </div>
             <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-              Reduce documentation burnout and spend more time supporting children
-              and families.
+              Generate structured OT documentation drafts faster while keeping clinician review and judgment in control.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              MedNote AI helps pediatric therapists turn rough session notes into
-              clearer clinical documentation for pediatric neurodiverse care and
-              standard outpatient therapy workflows, including OT, SLP, PT, ABA,
-              school-based therapy, and general rehab visits.
+              MedNote AI helps occupational therapists turn rough visit notes into organized draft documentation for
+              outpatient, pediatric, neurodiverse, and general rehab workflows without overclaiming what AI should do.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/soap?demo=1"
-                className="rounded-full bg-gradient-to-r from-teal-600 to-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-200/80 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-teal-200"
+                className="rounded-full bg-gradient-to-r from-teal-600 to-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-200/80 transition hover:translate-y-[-1px]"
               >
                 Try demo mode
               </Link>
@@ -116,44 +103,36 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="mt-8 flex flex-wrap gap-6 text-sm text-slate-500">
-              <span>Designed for clinician oversight</span>
-              <span>Warm, pediatric-centered documentation support</span>
-              <span>Practical for small clinics and independent therapists</span>
+              <span>OT-first positioning</span>
+              <span>De-identified workflow</span>
+              <span>Clinician-reviewed drafts only</span>
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-white/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur">
+          <div className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
             <div className="grid gap-4 sm:grid-cols-3">
-              <Metric value="8-15 min" label="Potential time saved per note" />
-              <Metric value="1 draft" label="From rough notes to polished structure" />
-              <Metric value="5+" label="Pediatric therapy use cases supported" />
+              <Metric value="SOAP +" label="Progress, discharge, insurance" />
+              <Metric value="Beta-safe" label="De-identification prompts" />
+              <Metric value="Copy/export" label="Ready-to-use draft workflow" />
             </div>
 
-            <div className="mt-6 rounded-[28px] bg-slate-950 p-5 text-white shadow-inner">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-teal-200/90">
-                    Session workflow
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                    Paste rough notes, keep clinical oversight
-                  </h2>
-                </div>
-                <div className="rounded-2xl bg-white/10 px-3 py-2 text-xs font-medium text-white/80">
-                  Demo mode
-                </div>
-              </div>
-
+            <div className="mt-6 rounded-[28px] bg-slate-950 p-6 text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-200">
+                Beta workflow
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+                Calm, professional, and practical
+              </h2>
               <div className="mt-5 space-y-3 rounded-[24px] bg-white/5 p-4">
-                {workflowSteps.map((step, index) => (
+                {betaChecklist.map((item, index) => (
                   <div
-                    key={step}
+                    key={item}
                     className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3"
                   >
                     <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-teal-300/20 text-sm font-semibold text-teal-200">
                       {index + 1}
                     </div>
-                    <p className="text-sm leading-6 text-slate-200">{step}</p>
+                    <p className="text-sm leading-6 text-slate-200">{item}</p>
                   </div>
                 ))}
               </div>
@@ -163,69 +142,42 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {featureCards.map((card) => (
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {coreSections.map((section) => (
             <article
-              key={card.title}
-              className="rounded-[28px] border border-slate-200/70 bg-white/85 p-7 shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur"
+              key={section.title}
+              className="rounded-[28px] border border-slate-200/70 bg-white/90 p-7 shadow-[0_14px_40px_rgba(15,23,42,0.05)]"
             >
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
-                {card.eyebrow}
+                {section.eyebrow}
               </p>
               <h3 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">
-                {card.title}
+                {section.title}
               </h3>
-              <p className="mt-4 text-sm leading-7 text-slate-600">{card.body}</p>
+              <p className="mt-4 text-sm leading-7 text-slate-600">{section.body}</p>
             </article>
           ))}
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[32px] border border-rose-100 bg-gradient-to-br from-rose-50 via-white to-sky-50 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-600">
-              Before / after
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
-              Show the time-saving story clearly
-            </h2>
-            <div className="mt-6 space-y-5">
-              <div className="rounded-[24px] border border-rose-100 bg-white/90 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Before
-                </p>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
-                  “Kid dysregulated in loud group. Needed heavy work first. Did
-                  shoe tying, writing, lots of cues, teacher wants more ideas for
-                  transitions.”
-                </p>
-              </div>
-              <div className="rounded-[24px] border border-teal-100 bg-slate-950 p-5 text-white">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-200">
-                  After
-                </p>
-                <p className="mt-3 text-sm leading-7 text-slate-100">
-                  “Child benefited from proprioceptive preparatory input prior to
-                  seated fine motor tasks. Required visual and verbal cueing for
-                  sequencing during shoe-tying and written output activities.
-                  Teacher collaboration focused on transition supports, movement
-                  breaks, and classroom carryover.”
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[32px] border border-slate-200/70 bg-white/85 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+        <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr]">
+          <div className="rounded-[32px] border border-slate-200/70 bg-white/90 p-8 shadow-[0_18px_56px_rgba(15,23,42,0.05)]">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
-              High-value product scope
+              OT documentation
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
-              Focus the MVP on the workflows that small pediatric clinics feel
-              every day
+              Built for the note types OT clinicians actually use
             </h2>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {featureList.map((item) => (
+              {[
+                'SOAP note drafts',
+                'Progress notes',
+                'Discharge note drafts',
+                'Insurance-support language',
+                'Plan-of-care summaries',
+                'Copy and export workflow',
+              ].map((item) => (
                 <div
                   key={item}
                   className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm font-medium leading-6 text-slate-700"
@@ -235,54 +187,16 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
-          <div className="rounded-[32px] border border-slate-200/70 bg-white/90 p-8 shadow-[0_18px_56px_rgba(15,23,42,0.05)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
-              Trust + positioning
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
-              Warm, clinician-centered, neurodiversity-affirming
-            </h2>
-            <div className="mt-6 space-y-4">
-              {trustItems.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm leading-7 text-slate-600"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 rounded-[24px] border border-dashed border-slate-300 bg-white px-5 py-4">
-              <p className="text-sm font-semibold text-slate-800">
-                Testimonials section placeholder
-              </p>
-              <p className="mt-2 text-sm leading-7 text-slate-500">
-                Add quotes from pediatric OT, SLP, PT, and school-based clinicians
-                once clinic pilots begin. Keep this visible so the homepage feels
-                sales-ready without overclaiming before launch.
-              </p>
-            </div>
-          </div>
 
           <div className="rounded-[32px] border border-slate-200/70 bg-gradient-to-br from-teal-900 via-slate-900 to-sky-950 p-8 text-white shadow-[0_22px_60px_rgba(15,23,42,0.14)]">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-200">
-              Future platform
+              Trust language
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-              Build a niche wedge now, expand into workflow later
+              Professional, careful beta positioning
             </h2>
-            <p className="mt-4 text-sm leading-7 text-slate-200">
-              Start with documentation relief for pediatric neurodiverse therapy
-              clinics. Then layer in progress tracking, caregiver communication,
-              and clinic workflow tools once documentation value is proven.
-            </p>
             <div className="mt-6 space-y-3">
-              {futureModules.map((item) => (
+              {trustItems.map((item) => (
                 <div
                   key={item}
                   className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-medium text-slate-100"
@@ -291,22 +205,47 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-slate-200">
+              MedNote AI does not claim HIPAA compliance on this beta landing page. The current positioning is
+              de-identified workflow support with clinician oversight.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-14 lg:px-8">
+        <div className="rounded-[32px] border border-slate-200/70 bg-white/90 p-8 shadow-[0_18px_56px_rgba(15,23,42,0.05)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
+                Ready for beta testing
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+                Start with a safer OT drafting workflow
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-600">
+                Use the demo to review the de-identified workflow, output controls, and clinician-review messaging
+                before inviting more beta users in.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
               <Link
                 href="/soap?demo=1"
-                className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
-                Explore demo mode
+                Open demo workspace
               </Link>
               <Link
-                href="/dashboard"
-                className="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                href="/privacy"
+                className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
               >
-                View product app
+                Review privacy page
               </Link>
             </div>
           </div>
         </div>
+
+        <SiteFooter light />
       </section>
     </main>
   );
@@ -316,9 +255,8 @@ function Metric({ value, label }) {
   return (
     <div className="rounded-[22px] border border-slate-200 bg-slate-50/90 px-4 py-4">
       <p className="text-2xl font-semibold tracking-tight text-slate-950">{value}</p>
-      <p className="mt-2 text-xs uppercase tracking-[0.18em] text-slate-500">
-        {label}
-      </p>
+      <p className="mt-2 text-xs uppercase tracking-[0.18em] text-slate-500">{label}</p>
     </div>
   );
 }
+

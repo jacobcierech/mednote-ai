@@ -3,6 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getRecommendations } from '../../../lib/clinicalLogic';
+import {
+  PHI_WARNING_TEXT,
+  REVIEW_DISCLAIMER_TEXT,
+  buildPhiSignature,
+  detectPhiCandidates,
+} from '../../../lib/phiDetection';
 
 const ASSIST_LEVEL_OPTIONS = [
   'Independent',
@@ -132,6 +138,14 @@ const INITIAL_EVAL = {
   limitation: 'classroom_transitions',
   setting: 'pediatric_outpatient',
 };
+
+function ReviewDisclaimer() {
+  return (
+    <div className="rounded-2xl border border-sky-200 bg-sky-50/90 px-4 py-3 text-xs leading-6 text-sky-900">
+      {REVIEW_DISCLAIMER_TEXT}
+    </div>
+  );
+}
 
 function Field({ label, children }) {
   return (
@@ -291,6 +305,60 @@ function ToolkitCard({ title, body, items }) {
   );
 }
 
+function OutputActions({
+  onCopy,
+  onDownload,
+  onClear,
+  onRegenerate,
+  onSave,
+  isSaving,
+  copiedLabel,
+  saveLabel = 'Save To History',
+}) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      <button
+        type="button"
+        onClick={onCopy}
+        className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
+      >
+        {copiedLabel}
+      </button>
+      <button
+        type="button"
+        onClick={onDownload}
+        className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
+      >
+        Download as .txt
+      </button>
+      <button
+        type="button"
+        onClick={onClear}
+        className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
+      >
+        Clear note
+      </button>
+      <button
+        type="button"
+        onClick={onRegenerate}
+        className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
+      >
+        Regenerate
+      </button>
+      {onSave ? (
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={isSaving}
+          className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(18,122,117,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
+        >
+          {isSaving ? 'Saving...' : saveLabel}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function buildCasePayload(form, evalData, recommendations) {
   return {
     patientInfo: {
@@ -339,6 +407,11 @@ export default function SoapPage() {
   const [saveMessage, setSaveMessage] = useState('');
   const [caseSaved, setCaseSaved] = useState(false);
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [deidentifiedConfirmed, setDeidentifiedConfirmed] = useState(false);
+  const [phiModalOpen, setPhiModalOpen] = useState(false);
+  const [phiFindings, setPhiFindings] = useState([]);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [confirmedPhiSignature, setConfirmedPhiSignature] = useState('');
 
   const resetWorkspace = () => {
     setForm(INITIAL_FORM);
@@ -352,6 +425,11 @@ export default function SoapPage() {
     setSaveMessage('');
     setCaseSaved(false);
     setShowAdvancedFields(false);
+    setDeidentifiedConfirmed(false);
+    setPhiModalOpen(false);
+    setPhiFindings([]);
+    setPendingAction(null);
+    setConfirmedPhiSignature('');
   };
 
   const recommendations = useMemo(
@@ -427,11 +505,13 @@ export default function SoapPage() {
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setCaseSaved(false);
+    setConfirmedPhiSignature('');
   };
 
   const updateEvalField = (key, value) => {
     setEvalData((prev) => ({ ...prev, [key]: value }));
     setCaseSaved(false);
+    setConfirmedPhiSignature('');
   };
 
   const handleFillSample = () => {
@@ -446,7 +526,112 @@ export default function SoapPage() {
     setSaveMessage('');
     setCaseSaved(false);
     setShowAdvancedFields(true);
+    setDeidentifiedConfirmed(true);
+    setConfirmedPhiSignature('');
   };
+
+  const collectClinicalInputs = () => [
+    { label: 'Patient label', value: form.patientName },
+    { label: 'Diagnosis', value: form.diagnosis },
+    { label: 'Precautions', value: form.precautions },
+    { label: 'Case context', value: form.caseContext },
+    { label: 'Subjective report', value: form.subjectiveReport },
+    { label: 'Pain / regulation today', value: form.painToday },
+    { label: 'Interventions completed', value: form.interventionsCompleted },
+    { label: 'Response / observations', value: form.patientResponse },
+    { label: 'Home program / education', value: form.homeProgram },
+    { label: 'Plan for next visit', value: form.planNextVisit },
+    { label: 'Rough session notes', value: form.roughNotes },
+    { label: 'Dominant side / context', value: evalData.dominantSide },
+    { label: 'Developmental / care context', value: evalData.postopStatus },
+    { label: 'Chief complaint', value: evalData.chiefComplaint },
+    { label: 'Strengths and routines', value: evalData.occupationalProfile },
+    { label: 'Baseline participation', value: evalData.plof },
+    { label: 'Current participation', value: evalData.clof },
+    { label: 'Regulation / safety / symptom summary', value: evalData.pain },
+  ];
+
+  const maybeBlockForPhi = (actionType) => {
+    if (!deidentifiedConfirmed) {
+      const label =
+        actionType === 'toolkit'
+          ? 'Please confirm the note is de-identified before generating clinic toolkit outputs.'
+          : 'Please confirm the note is de-identified before generating a SOAP note.';
+      if (actionType === 'toolkit') {
+        setToolkitError(label);
+      } else {
+        setError(label);
+      }
+      return true;
+    }
+
+    const values = collectClinicalInputs();
+    const findings = detectPhiCandidates(values);
+    const signature = buildPhiSignature(values);
+
+    if (findings.length && signature !== confirmedPhiSignature) {
+      setPhiFindings(findings);
+      setPendingAction(actionType);
+      setPhiModalOpen(true);
+      if (actionType === 'toolkit') {
+        setToolkitError('Possible identifying information was detected. Review the warning before generating.');
+      } else {
+        setError('Possible identifying information was detected. Review the warning before generating.');
+      }
+      return true;
+    }
+
+    return false;
+  };
+
+  const downloadTextFile = (content, baseName) => {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${baseName}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
+
+  const toolkitDownloadText = toolkitResult
+    ? [
+        'Progress Note:',
+        toolkitResult.progressNote,
+        '',
+        'Referral Note:',
+        toolkitResult.referralNote,
+        '',
+        'Discharge Note:',
+        toolkitResult.dischargeNote,
+        '',
+        'Insurance Support Note:',
+        toolkitResult.insuranceSupportNote,
+        '',
+        'Medical Necessity Rationale:',
+        toolkitResult.medicalNecessityRationale,
+        '',
+        'Plan Of Care Summary:',
+        toolkitResult.planOfCareSummary,
+        '',
+        'Recommended Frequency:',
+        toolkitResult.recommendedFrequency,
+        '',
+        'Recommended Duration:',
+        toolkitResult.recommendedDuration,
+        '',
+        'Recommended Assessments:',
+        ...toolkitResult.recommendedAssessments.map((item) => `- ${item}`),
+        '',
+        'Recommended Treatment Plan:',
+        ...toolkitResult.recommendedTreatmentPlan.map((item) => `- ${item}`),
+        '',
+        'Recommended Goals:',
+        ...toolkitResult.recommendedGoals.map((item) => `- ${item}`),
+      ].join('\n')
+    : '';
 
   const handleSaveCase = () => {
     const nextCase = buildCasePayload(form, evalData, recommendations);
@@ -477,6 +662,7 @@ export default function SoapPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (maybeBlockForPhi('soap')) return;
     setIsLoading(true);
     setError('');
     setSoapNote(null);
@@ -546,6 +732,7 @@ export default function SoapPage() {
   };
 
   const handleGenerateToolkit = async () => {
+    if (maybeBlockForPhi('toolkit')) return;
     setIsToolkitLoading(true);
     setToolkitError('');
     setToolkitResult(null);
@@ -628,47 +815,58 @@ export default function SoapPage() {
   const handleCopyToolkit = async () => {
     if (!toolkitResult) return;
 
-    const text = [
-      'Progress Note:',
-      toolkitResult.progressNote,
-      '',
-      'Referral Note:',
-      toolkitResult.referralNote,
-      '',
-      'Discharge Note:',
-      toolkitResult.dischargeNote,
-      '',
-      'Insurance Support Note:',
-      toolkitResult.insuranceSupportNote,
-      '',
-      'Plan Of Care Summary:',
-      toolkitResult.planOfCareSummary,
-      '',
-      'Medical Necessity Rationale:',
-      toolkitResult.medicalNecessityRationale,
-      '',
-      'Recommended Frequency:',
-      toolkitResult.recommendedFrequency,
-      '',
-      'Recommended Duration:',
-      toolkitResult.recommendedDuration,
-      '',
-      'Recommended Assessments:',
-      ...toolkitResult.recommendedAssessments.map((item) => `- ${item}`),
-      '',
-      'Recommended Treatment Plan:',
-      ...toolkitResult.recommendedTreatmentPlan.map((item) => `- ${item}`),
-      '',
-      'Recommended Goals:',
-      ...toolkitResult.recommendedGoals.map((item) => `- ${item}`),
-    ].join('\n');
-
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(toolkitDownloadText);
       setCopiedToolkit('copied');
       setTimeout(() => setCopiedToolkit(''), 1800);
     } catch {
       setToolkitError('Unable to copy clinic toolkit.');
+    }
+  };
+
+  const handleDownloadSoap = () => {
+    if (!soapNote) return;
+    downloadTextFile(
+      formatSoapNote(soapNote),
+      `${(form.patientName || 'ot-note').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-soap-draft`
+    );
+  };
+
+  const handleDownloadToolkit = () => {
+    if (!toolkitResult) return;
+    downloadTextFile(
+      toolkitDownloadText,
+      `${(form.patientName || 'ot-note').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-clinic-toolkit`
+    );
+  };
+
+  const handleClearSoap = () => {
+    setSoapNote(null);
+    setError('');
+    setCopied(false);
+    setSaveMessage('');
+  };
+
+  const handleClearToolkit = () => {
+    setToolkitResult(null);
+    setToolkitError('');
+    setCopiedToolkit('');
+    setSaveMessage('');
+  };
+
+  const handlePhiConfirm = async () => {
+    const signature = buildPhiSignature(collectClinicalInputs());
+    setConfirmedPhiSignature(signature);
+    const action = pendingAction;
+    setPhiModalOpen(false);
+    setPendingAction(null);
+
+    if (action === 'toolkit') {
+      await handleGenerateToolkit();
+    }
+
+    if (action === 'soap') {
+      await handleSubmit({ preventDefault() {} });
     }
   };
 
@@ -832,6 +1030,28 @@ export default function SoapPage() {
               title="Fast Capture + AI Assist"
               description="Use this first when the clinic is moving fast. Drop in rough notes once, then generate progress, discharge, insurance, assessment, and treatment planning support across pediatric or general outpatient care."
             >
+              <div className="mb-5 rounded-[24px] border border-amber-200/80 bg-gradient-to-r from-amber-50 to-sky-50 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)]">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl bg-white/90 text-amber-700 shadow-sm">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M10 2.5 3.25 5v4.02c0 4.07 2.76 7.85 6.75 8.98 3.99-1.13 6.75-4.91 6.75-8.98V5L10 2.5Z" stroke="currentColor" strokeWidth="1.4" />
+                      <path d="M10 6.6v4.1M10 13.6h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-800">
+                      De-identified workflow
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-amber-950">
+                      {PHI_WARNING_TEXT}
+                    </p>
+                    <p className="mt-1.5 text-xs leading-6 text-amber-900/80">
+                      Clinicians remain responsible for reviewing all generated documentation before clinical use.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="mb-5 flex flex-wrap gap-3">
                 <button
                   type="button"
@@ -891,11 +1111,28 @@ export default function SoapPage() {
                 </Field>
               </div>
 
+              <label className="mt-6 flex items-start gap-3 rounded-[22px] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={deidentifiedConfirmed}
+                  onChange={(e) => {
+                    setDeidentifiedConfirmed(e.target.checked);
+                    if (!e.target.checked) {
+                      setConfirmedPhiSignature('');
+                    }
+                  }}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                />
+                <span>
+                  I confirm this note is de-identified and does not contain PHI.
+                </span>
+              </label>
+
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={handleGenerateToolkit}
-                  disabled={isToolkitLoading}
+                  disabled={isToolkitLoading || !deidentifiedConfirmed}
                   className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(18,122,117,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
                 >
                   {isToolkitLoading ? 'Generating Clinic Tools...' : 'Generate Progress + Discharge + Insurance Tools'}
@@ -1258,7 +1495,7 @@ export default function SoapPage() {
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !deidentifiedConfirmed}
                     className="rounded-2xl bg-gradient-to-r from-slate-950 to-slate-800 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(15,23,42,0.16)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-400"
                   >
                     {isLoading ? 'Generating SOAP Note...' : 'Generate SOAP Note'}
@@ -1311,23 +1548,17 @@ export default function SoapPage() {
 
               {toolkitResult ? (
                 <div className="space-y-4">
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={handleCopyToolkit}
-                      className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
-                    >
-                      {copiedToolkit ? 'Copied' : 'Copy Toolkit'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveToolkitToHistory}
-                      disabled={isSaving}
-                      className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(18,122,117,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
-                    >
-                      {isSaving ? 'Saving...' : 'Save Toolkit To History'}
-                    </button>
-                  </div>
+                  <ReviewDisclaimer />
+                  <OutputActions
+                    onCopy={handleCopyToolkit}
+                    onDownload={handleDownloadToolkit}
+                    onClear={handleClearToolkit}
+                    onRegenerate={handleGenerateToolkit}
+                    onSave={handleSaveToolkitToHistory}
+                    isSaving={isSaving}
+                    copiedLabel={copiedToolkit ? 'Copied' : 'Copy note'}
+                    saveLabel="Save Toolkit To History"
+                  />
 
                   {saveMessage ? (
                     <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
@@ -1403,23 +1634,16 @@ export default function SoapPage() {
 
               {soapNote ? (
                 <div className="space-y-5">
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={handleCopy}
-                      className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
-                    >
-                      {copied ? 'Copied' : 'Copy SOAP Note'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveToHistory}
-                      disabled={isSaving}
-                      className="rounded-2xl bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(18,122,117,0.18)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:from-teal-300 disabled:to-cyan-300"
-                    >
-                      {isSaving ? 'Saving...' : 'Save To History'}
-                    </button>
-                  </div>
+                  <ReviewDisclaimer />
+                  <OutputActions
+                    onCopy={handleCopy}
+                    onDownload={handleDownloadSoap}
+                    onClear={handleClearSoap}
+                    onRegenerate={() => handleSubmit({ preventDefault() {} })}
+                    onSave={handleSaveToHistory}
+                    isSaving={isSaving}
+                    copiedLabel={copied ? 'Copied' : 'Copy note'}
+                  />
 
                   {saveMessage ? (
                     <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
@@ -1469,6 +1693,54 @@ export default function SoapPage() {
             </SectionCard>
           </div>
         </div>
+
+        {phiModalOpen ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm">
+            <div className="w-full max-w-2xl rounded-[28px] border border-white/80 bg-white p-6 shadow-[0_28px_80px_rgba(15,23,42,0.2)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+                Possible identifying information detected
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                Review this content before generation
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                The draft appears to contain text that may identify a patient. Edit the note to remove identifiers, or
+                confirm that the text is already de-identified before continuing.
+              </p>
+
+              <div className="mt-5 rounded-[24px] border border-amber-200 bg-amber-50/80 p-4">
+                <ul className="space-y-2 text-sm leading-6 text-amber-950">
+                  {phiFindings.map((finding, index) => (
+                    <li key={`${finding.field}-${finding.type}-${index}`}>
+                      <span className="font-semibold">{finding.field}:</span> {finding.message}{' '}
+                      <span className="font-medium">("{finding.sample}")</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhiModalOpen(false);
+                    setPendingAction(null);
+                  }}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >
+                  Go back and edit
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePhiConfirm}
+                  className="rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Continue with de-identified draft
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

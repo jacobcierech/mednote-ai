@@ -2,6 +2,7 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import SiteFooter from '../../components/SiteFooter'
 
 const UserContext = createContext(null)
 export const useUser = () => useContext(UserContext)
@@ -194,6 +195,7 @@ export default function AppLayout({ children }) {
           {/* Page content */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 1.85rem 2rem' }} className="animate-fade-in">
             {children}
+            <SiteFooter />
           </div>
         </main>
       </div>

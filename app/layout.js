@@ -1,9 +1,9 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'MedNote AI | Therapy Documentation Workspace',
+  title: 'MedNote AI | Occupational Therapy Documentation Workspace',
   description:
-    'AI documentation assistant for pediatric and outpatient therapy. Reduce documentation burnout, save time, and keep clinician oversight front and center.',
+    'AI documentation assistant for occupational therapy with a de-identified workflow and clinician-reviewed drafts.',
 }
 
 export default function RootLayout({ children }) {
